@@ -145,7 +145,6 @@ function showConsentModal() {
 
     // Handle "View My Estimate" click
     viewBtn.addEventListener('click', async function() {
-        if (!checkbox.checked) return;
 
         viewBtn.disabled = true;
         viewBtn.textContent = 'Loading...';
