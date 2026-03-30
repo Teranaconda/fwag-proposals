@@ -45,11 +45,10 @@ async function downloadZohoPDF(token, estimateId) {
 
 // --- Helper: Upload PDF to GHL Media Storage ---
 async function uploadToGHL(pdfBuffer, filename) {
-  console.log('[GHL] Uploading PDF to media storage:', filename);
+  console.log('[GHL] Uploading PDF to media storage:', filename, 'size:', pdfBuffer.length);
   const FormData = require('form-data');
   const form = new FormData();
   form.append('file', pdfBuffer, { filename: filename, contentType: 'application/pdf' });
-  form.append('hosted', 'true');
 
   const res = await fetch('https://services.leadconnectorhq.com/medias/upload-file', {
     method: 'POST',
@@ -60,17 +59,32 @@ async function uploadToGHL(pdfBuffer, filename) {
     },
     body: form
   });
-  const data = await res.json();
-  console.log('[GHL] Upload response:', JSON.stringify(data));
-  if (!data.url && !data.fileUrl) {
-    throw new Error('GHL upload failed: ' + JSON.stringify(data));
+  const responseText = await res.text();
+  console.log('[GHL] Upload response status:', res.status);
+  console.log('[GHL] Upload response body:', responseText);
+
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch (e) {
+    throw new Error('GHL upload returned non-JSON: ' + responseText);
   }
-  return data.url || data.fileUrl;
+
+  if (res.status !== 200) {
+    throw new Error('GHL upload failed: ' + responseText);
+  }
+
+  const pdfUrl = data.url || data.fileUrl || (data.uploadedFiles && data.uploadedFiles[0] && data.uploadedFiles[0].url);
+  if (!pdfUrl) {
+    throw new Error('GHL upload succeeded but no URL in response: ' + responseText);
+  }
+  console.log('[GHL] PDF URL:', pdfUrl);
+  return pdfUrl;
 }
 
 // --- Helper: Trigger GHL workflow ---
 async function triggerGHLWorkflow(proposalData) {
-  console.log('[GHL] Triggering workflow with:', JSON.stringify(proposalData));
+  console.log('[GHL] Triggering workflow...');
   const res = await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -103,7 +117,6 @@ exports.handler = async (event) => {
     console.log('[WEBHOOK] Received payload for estimate:', payload.estimate_number);
 
     if (payload.secret !== process.env.WEBHOOK_SECRET) {
-      console.log('[WEBHOOK] Invalid secret');
       return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
     }
 
@@ -111,7 +124,6 @@ exports.handler = async (event) => {
     const estimateNumber = payload.estimate_number || '';
 
     // --- Idempotency check ---
-    console.log('[SUPABASE] Checking for existing proposal...');
     const { data: existing } = await supabase
       .from('proposals')
       .select('*')
@@ -119,19 +131,16 @@ exports.handler = async (event) => {
       .single();
 
     if (existing) {
-      console.log('[SUPABASE] Found existing proposal, status:', existing.status);
+      console.log('[SUPABASE] Found existing, status:', existing.status);
       if (existing.status === 'ready') {
         const totalChanged = parseFloat(payload.estimate_total) !== parseFloat(existing.estimate_total);
         if (!totalChanged) {
-          console.log('[WEBHOOK] Already processed, returning existing URL');
           return { statusCode: 200, body: JSON.stringify({ status: 'already_ready', slug: existing.slug, proposal_url: process.env.SITE_URL + '/est/' + existing.slug }) };
         }
-        console.log('[WEBHOOK] Estimate total changed, re-processing...');
         await supabase
           .from('proposals')
           .update({ status: 'processing', version: existing.version + 1, updated_at: new Date().toISOString() })
           .eq('id', existing.id);
-
         if (existing.signed) {
           await supabase.from('consent_events').insert({
             proposal_id: existing.id,
@@ -144,13 +153,18 @@ exports.handler = async (event) => {
             .eq('id', existing.id);
         }
       }
+      if (existing.status === 'processing') {
+        // Previous attempt got stuck — delete and re-create
+        console.log('[SUPABASE] Stuck processing row found, deleting and retrying...');
+        await supabase.from('proposals').delete().eq('id', existing.id);
+      }
     }
 
-    // --- Create or get proposal record ---
+    // --- Create proposal record ---
     let proposalId;
     let slug;
 
-    if (existing) {
+    if (existing && existing.status !== 'processing') {
       proposalId = existing.id;
       slug = existing.slug;
     } else {
@@ -194,7 +208,6 @@ exports.handler = async (event) => {
     console.log('[WEBHOOK] Document hash computed');
 
     // --- Update proposal record to ready ---
-    console.log('[SUPABASE] Updating proposal to ready...');
     await supabase
       .from('proposals')
       .update({
@@ -210,9 +223,9 @@ exports.handler = async (event) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', proposalId);
-    console.log('[SUPABASE] Proposal updated to ready');
+    console.log('[SUPABASE] Updated to ready');
 
-    // --- Trigger GHL workflow to send SMS ---
+    // --- Trigger GHL workflow ---
     await triggerGHLWorkflow({
       customer_name: payload.customer_name,
       customer_email: payload.customer_email,
@@ -222,7 +235,7 @@ exports.handler = async (event) => {
       salesperson_name: payload.salesperson_name
     });
 
-    console.log('[WEBHOOK] Complete. Proposal URL:', process.env.SITE_URL + '/est/' + slug);
+    console.log('[WEBHOOK] Complete:', process.env.SITE_URL + '/est/' + slug);
 
     return {
       statusCode: 200,
@@ -235,8 +248,6 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error('[WEBHOOK ERROR]', err.message);
-    console.error('[WEBHOOK ERROR STACK]', err.stack);
-
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Internal server error', detail: err.message })
