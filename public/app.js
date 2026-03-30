@@ -21,7 +21,7 @@ function formatCurrency(amount) {
 async function loadProposal() {
     const slug = getSlug();
     if (!slug) {
-        showError('Invalid Link', 'This proposal link appears to be invalid. Please check the URL or contact Florida Windows & Glass at (305) 260-0011.');
+        showError('Invalid Link', 'This proposal link appears to be invalid. Please check the URL or contact Florida Windows & Glass at (888) 392-4462.');
         return;
     }
 
@@ -29,7 +29,7 @@ async function loadProposal() {
         const response = await fetch('/api/proposal/' + slug);
 
         if (response.status === 404) {
-            showError('Estimate Not Found', 'This estimate link may be invalid or expired. Please contact Florida Windows & Glass at (305) 260-0011.');
+            showError('Estimate Not Found', 'This estimate link may be invalid or expired. Please contact Florida Windows & Glass at (888) 392-4462.');
             return;
         }
 
@@ -40,7 +40,7 @@ async function loadProposal() {
         }
 
         if (!response.ok) {
-            showError('Something Went Wrong', 'We couldn\'t load your estimate. Please try refreshing the page or call us at (305) 260-0011.');
+            showError('Something Went Wrong', 'We couldn\'t load your estimate. Please try refreshing the page or call us at (888) 392-4462.');
             return;
         }
 
@@ -49,7 +49,7 @@ async function loadProposal() {
 
     } catch (err) {
         console.error('Error loading proposal:', err);
-        showError('Connection Error', 'We couldn\'t reach our servers. Please check your internet connection and try again, or call us at (305) 260-0011.');
+        showError('Connection Error', 'We couldn\'t reach our servers. Please check your internet connection and try again, or call us at (888) 392-4462.');
     }
 }
 
@@ -194,7 +194,7 @@ async function handleAccept() {
         if (result.estimate_url) {
             window.location.href = result.estimate_url;
         } else {
-            btn.textContent = 'Signing link unavailable — call (305) 260-0011';
+            btn.textContent = 'Signing link unavailable — call (888) 392-4462';
             btn.disabled = false;
         }
     } catch (err) {
