@@ -33,7 +33,7 @@ exports.handler = async (event) => {
     customer_email,
     customer_phone,
     salesperson_name,
-    total
+    estimate_total
   } = body;
 
   if (!estimate_id || !estimate_number) {
@@ -63,7 +63,7 @@ exports.handler = async (event) => {
 
     // If ready and same version, return success
     if (existing && existing.status === 'ready') {
-      const totalChanged = parseFloat(existing.estimate_total) !== parseFloat(total);
+      const totalChanged = parseFloat(existing.estimate_total) !== parseFloat(estimate_total);
       if (!totalChanged) {
         console.log('Proposal already ready, no changes detected');
         return {
@@ -92,7 +92,7 @@ exports.handler = async (event) => {
       customer_email: customer_email || null,
       customer_phone: customer_phone || null,
       salesperson_name: salesperson_name || null,
-      estimate_total: parseFloat(total) || 0,
+      estimate_total: parseFloat(estimate_total) || 0,
       slug,
       version,
       status: 'processing',
