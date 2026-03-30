@@ -1,11 +1,23 @@
-[build]
+﻿[build]
   publish = "public"
   functions = "netlify/functions"
 
 [functions]
   node_bundler = "esbuild"
 
+# API routes -> Netlify Functions
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from = "/api/proposal/:slug"
+  to = "/.netlify/functions/proposal"
+  status = 200
+
+[[redirects]]
+  from = "/api/proposal/:slug/accept"
+  to = "/.netlify/functions/proposal-accept"
+  status = 200
+
+# Proposal page routing -> SPA index.html
+[[redirects]]
+  from = "/est/*"
+  to = "/index.html"
   status = 200

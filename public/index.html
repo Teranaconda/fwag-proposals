@@ -1,1 +1,1233 @@
-<html><body><h1>FWAG Proposals</h1><p>Coming soon.</p></body></html>
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Estimate — Florida Windows & Glass</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       CSS VARIABLES — Edit brand colors here
+       ======================================== */
+    :root {
+      --primary: #1B3A5C;
+      --primary-light: #24507A;
+      --secondary: #C41E3A;
+      --secondary-light: #D4354F;
+      --accent: #2E86C1;
+      --accent-light: #3498DB;
+      --bg: #F8F9FA;
+      --bg-alt: #EEF2F6;
+      --text: #2D2D2D;
+      --text-light: #5A6A7A;
+      --white: #FFFFFF;
+      --success: #28A745;
+      --success-dark: #1E8535;
+      --error: #DC3545;
+      --border: #D1D9E0;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+      --radius: 8px;
+      --radius-lg: 12px;
+      --max-width: 900px;
+      --section-padding: 60px 20px;
+    }
+
+    /* ========================================
+       RESET & BASE
+       ======================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { max-width: 100%; height: auto; display: block; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ========================================
+       LOADING & ERROR STATES
+       ======================================== */
+    .state-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .state-screen h1 { font-size: 1.5rem; margin-bottom: 12px; color: var(--primary); }
+    .state-screen p { color: var(--text-light); max-width: 400px; }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loading-screen { display: flex; }
+    #error-screen { display: none; }
+    #proposal-content { display: none; }
+    #accepted-banner { display: none; }
+
+    /* ========================================
+       HERO / COVER
+       ======================================== */
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--white);
+      padding: 80px 20px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.05) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .hero-inner { max-width: var(--max-width); margin: 0 auto; position: relative; z-index: 1; }
+    .hero-logo {
+      width: 160px;
+      margin: 0 auto 24px;
+      filter: brightness(0) invert(1);
+    }
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .hero .estimate-for {
+      font-size: 1.15rem;
+      opacity: 0.9;
+      margin-bottom: 4px;
+    }
+    .hero .estimate-number {
+      font-size: 0.95rem;
+      opacity: 0.7;
+    }
+    .hero .estimate-total {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-top: 20px;
+      letter-spacing: -0.02em;
+    }
+    .hero .estimate-total-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+
+    /* ========================================
+       SECTION COMMON
+       ======================================== */
+    .section { padding: var(--section-padding); }
+    .section-inner { max-width: var(--max-width); margin: 0 auto; }
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .section-subtitle {
+      color: var(--text-light);
+      font-size: 1rem;
+      margin-bottom: 32px;
+    }
+    .section-alt { background: var(--bg-alt); }
+    .section-dark {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--white);
+    }
+    .section-dark .section-title { color: var(--white); }
+    .section-dark .section-subtitle { color: rgba(255,255,255,0.8); }
+    .divider {
+      width: 60px; height: 3px;
+      background: var(--secondary);
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    /* ========================================
+       ACCEPTED BANNER
+       ======================================== */
+    #accepted-banner {
+      background: var(--success);
+      color: var(--white);
+      padding: 20px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+    #accepted-banner .accepted-date { font-weight: 400; opacity: 0.9; font-size: 0.95rem; }
+
+    /* ========================================
+       PDF VIEWER
+       ======================================== */
+    .pdf-section { background: var(--bg-alt); padding: 40px 20px; }
+    .pdf-container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .pdf-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--primary);
+      color: var(--white);
+    }
+    .pdf-header h3 { font-size: 1rem; font-weight: 600; }
+    .pdf-download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.15);
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+    }
+    .pdf-download-btn:hover { background: rgba(255,255,255,0.25); text-decoration: none; }
+    .pdf-iframe {
+      width: 100%;
+      height: 700px;
+      border: none;
+      display: block;
+    }
+    .pdf-fallback {
+      display: none;
+      padding: 40px;
+      text-align: center;
+      color: var(--text-light);
+    }
+    .pdf-fallback a {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 12px 24px;
+      background: var(--secondary);
+      color: var(--white);
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    /* ========================================
+       ABOUT SECTION
+       ======================================== */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+    .about-image {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      background: var(--border);
+    }
+    .about-image img { width: 100%; height: 100%; object-fit: cover; }
+    .about-text p { margin-bottom: 16px; color: var(--text-light); }
+    .about-text p:last-child { margin-bottom: 0; }
+
+    /* ========================================
+       PROCESS STEPS
+       ======================================== */
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    .process-step {
+      text-align: center;
+      padding: 24px 16px;
+    }
+    .step-number {
+      width: 48px; height: 48px;
+      background: var(--secondary);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0 auto 16px;
+    }
+    .process-step h4 {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      color: var(--white);
+    }
+    .process-step p {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      line-height: 1.5;
+    }
+
+    /* ========================================
+       BENEFITS GRID
+       ======================================== */
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .benefit-card {
+      background: var(--white);
+      padding: 28px 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border-left: 3px solid var(--secondary);
+    }
+    .benefit-card .benefit-icon {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+    .benefit-card h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .benefit-card p {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+
+    /* ========================================
+       REVIEWS
+       ======================================== */
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .review-card {
+      background: var(--white);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .review-stars { color: #F4B400; font-size: 1.1rem; margin-bottom: 12px; }
+    .review-text {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      line-height: 1.6;
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+    .review-author { font-size: 0.85rem; font-weight: 600; color: var(--primary); }
+
+    /* ========================================
+       LICENSES & CREDENTIALS
+       ======================================== */
+    .credentials-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+      align-items: center;
+    }
+    .credential-badge {
+      background: var(--white);
+      padding: 16px 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+    .credential-badge .badge-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+
+    /* ========================================
+       CONSENT & SIGNATURE SECTION
+       ======================================== */
+    .consent-section {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+    .consent-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 24px;
+    }
+
+    /* Checkboxes */
+    .consent-group { margin-bottom: 20px; }
+    .consent-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .consent-check input[type="checkbox"] {
+      width: 20px; height: 20px;
+      margin-top: 2px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .consent-label { font-size: 0.9rem; line-height: 1.5; }
+    .consent-label-required { color: var(--secondary); font-weight: 600; }
+    .consent-legal {
+      font-size: 0.78rem;
+      color: var(--text-light);
+      margin-top: 4px;
+      padding-left: 32px;
+      line-height: 1.5;
+    }
+
+    /* T&C */
+    .tc-container {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      font-size: 0.82rem;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+    .tc-container h4 { color: var(--text); margin-bottom: 8px; }
+    .tc-container p { margin-bottom: 8px; }
+
+    /* Signature */
+    .signature-area { margin-top: 28px; padding-top: 28px; border-top: 1px solid var(--border); }
+    .sig-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .sig-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .sig-tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--bg);
+      border: none;
+      color: var(--text-light);
+      transition: all 0.2s;
+    }
+    .sig-tab.active {
+      background: var(--primary);
+      color: var(--white);
+    }
+    .sig-draw-area {
+      position: relative;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--white);
+      margin-bottom: 8px;
+    }
+    .sig-draw-area canvas {
+      width: 100%;
+      height: 150px;
+      display: block;
+      cursor: crosshair;
+    }
+    .sig-draw-hint {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--border);
+      font-size: 0.9rem;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .sig-clear-btn {
+      font-size: 0.8rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .sig-clear-btn:hover { text-decoration: underline; }
+    .sig-type-area { display: none; }
+    .sig-type-input {
+      width: 100%;
+      padding: 16px;
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.8rem;
+      font-weight: 700;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      text-align: center;
+      color: var(--primary);
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .sig-type-input:focus { border-color: var(--primary); }
+    .sig-type-input::placeholder {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--border);
+    }
+
+    /* Accept button */
+    .accept-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--success);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: background 0.2s, opacity 0.2s;
+      position: relative;
+    }
+    .accept-btn:hover:not(:disabled) { background: var(--success-dark); }
+    .accept-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .accept-btn.loading {
+      color: transparent;
+    }
+    .accept-btn.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px; height: 24px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .accept-error {
+      color: var(--error);
+      font-size: 0.85rem;
+      margin-top: 12px;
+      display: none;
+      text-align: center;
+    }
+    .accept-note {
+      font-size: 0.78rem;
+      color: var(--text-light);
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    /* ========================================
+       VERSION MISMATCH BANNER
+       ======================================== */
+    .version-warning {
+      display: none;
+      background: #FFF3CD;
+      border: 1px solid #FFD866;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: #856404;
+    }
+    .version-warning strong { display: block; margin-bottom: 4px; }
+
+    /* ========================================
+       FOOTER
+       ======================================== */
+    .footer {
+      background: var(--primary);
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 32px 20px;
+      font-size: 0.82rem;
+    }
+    .footer a { color: rgba(255,255,255,0.9); }
+    .footer-company {
+      font-weight: 600;
+      color: var(--white);
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    /* ========================================
+       RESPONSIVE
+       ======================================== */
+    @media (max-width: 768px) {
+      .hero { padding: 60px 20px 40px; }
+      .hero h1 { font-size: 1.5rem; }
+      .hero .estimate-total { font-size: 1.8rem; }
+      .about-grid { grid-template-columns: 1fr; }
+      .process-steps { grid-template-columns: repeat(2, 1fr); }
+      .benefits-grid { grid-template-columns: 1fr; }
+      .reviews-grid { grid-template-columns: 1fr; }
+      .pdf-iframe { height: 500px; }
+      .consent-section { padding: 20px; }
+      .pdf-header { flex-direction: column; gap: 12px; }
+    }
+    @media (max-width: 480px) {
+      .process-steps { grid-template-columns: 1fr; }
+      .pdf-iframe { height: 400px; }
+      .hero-logo { width: 120px; }
+      :root { --section-padding: 40px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ LOADING STATE ============ -->
+  <div id="loading-screen" class="state-screen">
+    <div class="spinner"></div>
+    <h1>Loading your estimate...</h1>
+    <p>Preparing your personalized proposal from Florida Windows & Glass.</p>
+  </div>
+
+  <!-- ============ ERROR STATE ============ -->
+  <div id="error-screen" class="state-screen">
+    <h1 id="error-title">Something went wrong</h1>
+    <p id="error-message">We couldn't load this proposal. Please try again or contact us.</p>
+    <p style="margin-top:20px;">
+      <strong>Florida Windows & Glass</strong><br>
+      <a href="tel:+13052600011">(305) 260-0011</a> &middot;
+      <a href="mailto:info@fwaginc.com">info@fwaginc.com</a>
+    </p>
+  </div>
+
+  <!-- ============ MAIN PROPOSAL CONTENT ============ -->
+  <div id="proposal-content">
+
+    <!-- ACCEPTED BANNER (shown if already signed) -->
+    <div id="accepted-banner">
+      You accepted this estimate on <span id="accepted-date"></span>. Thank you!
+    </div>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-inner">
+        <img src="https://assets.cdn.filesafe.space/ygg3IqHNNUpSXx9l4o0V/media/697b9c00d5b65e6e23af35b5.png" alt="Florida Windows & Glass" class="hero-logo" id="hero-logo">
+        <h1>Your Personalized Estimate</h1>
+        <div class="estimate-for" id="hero-customer-name"></div>
+        <div class="estimate-number" id="hero-estimate-number"></div>
+        <div class="estimate-total" id="hero-total"></div>
+        <div class="estimate-total-label">Estimated Investment</div>
+      </div>
+    </section>
+
+    <!-- PDF VIEWER -->
+    <section class="pdf-section">
+      <div class="pdf-container">
+        <div class="pdf-header">
+          <h3>Detailed Estimate</h3>
+          <a id="pdf-download-link" class="pdf-download-btn" href="#" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1v10M8 11L4 7M8 11l4-4M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Download PDF
+          </a>
+        </div>
+        <iframe id="pdf-iframe" class="pdf-iframe" title="Estimate PDF"></iframe>
+        <div id="pdf-fallback" class="pdf-fallback">
+          <p>Your browser can't display this PDF inline.</p>
+          <a id="pdf-fallback-link" href="#">Open PDF</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT FWAG -->
+    <section class="section">
+      <div class="section-inner">
+        <div class="about-grid">
+          <div class="about-text">
+            <div class="divider"></div>
+            <h2 class="section-title">About Florida Windows & Glass</h2>
+            <p>We're a locally owned impact window and door company based in Miami Lakes, serving homeowners across Miami-Dade and Broward counties.</p>
+            <p>Our team handles everything from your free in-home estimate through permitting, professional installation, and final inspection. No subcontractors, no runaround — just one team from start to finish.</p>
+            <p>We specialize in hurricane-rated impact windows and doors that protect your family, reduce energy costs, lower insurance premiums, and increase your property value.</p>
+          </div>
+          <div class="about-image">
+            <!-- PLACEHOLDER: Replace with Company Cam photo of completed install -->
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='450' fill='%23D1D9E0'%3E%3Crect width='600' height='450'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%235A6A7A' font-family='sans-serif' font-size='16'%3ECompany Cam Photo%3C/text%3E%3C/svg%3E" alt="FWAG Installation">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OUR PROCESS -->
+    <section class="section section-dark">
+      <div class="section-inner">
+        <div style="text-align:center; margin-bottom:40px;">
+          <div class="divider" style="margin:0 auto 20px;"></div>
+          <h2 class="section-title">The FWAG Process</h2>
+          <p class="section-subtitle">From estimate to installation — here's what to expect.</p>
+        </div>
+        <div class="process-steps">
+          <div class="process-step">
+            <div class="step-number">1</div>
+            <h4>Free Estimate</h4>
+            <p>A FWAG rep visits your home, measures every opening, and builds a detailed estimate tailored to your needs.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number">2</div>
+            <h4>Order & Permit</h4>
+            <p>We order your custom-manufactured windows and doors and handle all city/county permitting on your behalf.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number">3</div>
+            <h4>Professional Install</h4>
+            <p>Our in-house crew installs everything to code — no subcontractors. Most homes are completed in 1-2 days.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number">4</div>
+            <h4>Final Inspection</h4>
+            <p>A county inspector verifies the installation meets all building codes. You get your permit card and full warranty.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY IMPACT GLASS -->
+    <section class="section">
+      <div class="section-inner">
+        <div style="text-align:center; margin-bottom:40px;">
+          <div class="divider" style="margin:0 auto 20px;"></div>
+          <h2 class="section-title">Why Impact Windows & Doors?</h2>
+          <p class="section-subtitle">An investment that protects your family and pays for itself.</p>
+        </div>
+        <div class="benefits-grid">
+          <div class="benefit-card">
+            <div class="benefit-icon">🛡️</div>
+            <h4>Hurricane Protection</h4>
+            <p>Engineered to withstand Category 5 winds and flying debris. No shutters needed — ever again.</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🔒</div>
+            <h4>24/7 Security</h4>
+            <p>Impact glass is nearly impossible to break through, deterring intruders around the clock.</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">💰</div>
+            <h4>Insurance Savings</h4>
+            <p>Most homeowners save hundreds annually on insurance premiums with impact-rated openings.</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">⚡</div>
+            <h4>Energy Efficiency</h4>
+            <p>Insulated glass reduces heat transfer, keeping your home cooler and your electric bill lower.</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🏠</div>
+            <h4>Property Value</h4>
+            <p>Impact windows and doors add up to 70% return on investment when you sell your home.</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🔇</div>
+            <h4>Noise Reduction</h4>
+            <p>Multi-layered impact glass significantly reduces outside noise for a quieter home.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section class="section section-alt">
+      <div class="section-inner">
+        <div style="text-align:center; margin-bottom:40px;">
+          <div class="divider" style="margin:0 auto 20px;"></div>
+          <h2 class="section-title">What Our Customers Say</h2>
+          <p class="section-subtitle">Rated 5 stars on Google with 100+ reviews.</p>
+        </div>
+        <div class="reviews-grid">
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text">"From the estimate to the final inspection, the FWAG team was professional and thorough. Our new impact windows look amazing and the installation was seamless."</p>
+            <div class="review-author">— Verified Google Review</div>
+          </div>
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text">"Juvian and his crew handled everything — permits, HOA approval, and a flawless install. We barely heard the construction. Highly recommend."</p>
+            <div class="review-author">— Verified Google Review</div>
+          </div>
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text">"Best decision we made for our home. Our energy bill dropped noticeably and we feel so much safer during hurricane season. Great team."</p>
+            <div class="review-author">— Verified Google Review</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LICENSES & CREDENTIALS -->
+    <section class="section">
+      <div class="section-inner">
+        <div style="text-align:center; margin-bottom:32px;">
+          <div class="divider" style="margin:0 auto 20px;"></div>
+          <h2 class="section-title">Licensed & Certified</h2>
+        </div>
+        <div class="credentials-row">
+          <div class="credential-badge">
+            CGC-1511987
+            <span class="badge-label">FL General Contractor</span>
+          </div>
+          <div class="credential-badge">
+            Licensed & Insured
+            <span class="badge-label">Full Coverage</span>
+          </div>
+          <div class="credential-badge">
+            ECO Window Systems
+            <span class="badge-label">Authorized Dealer</span>
+          </div>
+          <div class="credential-badge">
+            Miami-Dade NOA
+            <span class="badge-label">Product Approved</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONSENT & SIGNATURE -->
+    <section class="section section-alt" id="consent-signature-section">
+      <div class="consent-section">
+        <h2 class="consent-title">Review & Accept Your Estimate</h2>
+
+        <!-- Version warning (hidden by default) -->
+        <div class="version-warning" id="version-warning">
+          <strong>This estimate has been updated.</strong>
+          Please review the updated details above and re-sign below.
+        </div>
+
+        <!-- T&C -->
+        <div class="tc-container" id="tc-container">
+          <h4>Terms & Conditions</h4>
+          <p>By signing below, you ("Customer") agree to the following terms with Florida Windows & Glass, Inc. ("FWAG"):</p>
+          <p><strong>Scope of Work:</strong> FWAG will furnish and install the impact windows and/or doors as described in the estimate above. Any changes to the scope must be agreed upon in writing.</p>
+          <p><strong>Payment Terms:</strong> A deposit is required to initiate product ordering. The remaining balance is due upon completion of installation. FWAG accepts check, cash, credit card, and approved financing.</p>
+          <p><strong>Permitting:</strong> FWAG will obtain all required building permits. The customer is responsible for HOA approval, if applicable.</p>
+          <p><strong>Installation Timeline:</strong> Manufacturing lead times vary by product. FWAG will notify you when materials are received and schedule installation at a mutually convenient time.</p>
+          <p><strong>Warranty:</strong> All products carry the manufacturer's warranty. FWAG provides a workmanship warranty on all installations.</p>
+          <p><strong>Cancellation:</strong> Per Florida Statute 501.031, you have the right to cancel this contract within 3 business days of signing.</p>
+        </div>
+
+        <!-- Consent checkboxes -->
+        <div class="consent-group">
+          <label class="consent-check">
+            <input type="checkbox" id="consent-tc" required>
+            <span class="consent-label"><span class="consent-label-required">*</span> I have reviewed the estimate and agree to the Terms & Conditions above.</span>
+          </label>
+        </div>
+
+        <div class="consent-group">
+          <label class="consent-check">
+            <input type="checkbox" id="consent-sms">
+            <span class="consent-label">I consent to receive text messages from Florida Windows & Glass, Inc. regarding my project.</span>
+          </label>
+          <p class="consent-legal">By checking this box, you consent to receive occasional promotional text messages from Florida Windows & Glass, Inc. at the phone number provided. Message frequency varies. Message and data rates may apply. Reply STOP to opt out at any time. Reply HELP for assistance.</p>
+        </div>
+
+        <div class="consent-group">
+          <label class="consent-check">
+            <input type="checkbox" id="consent-marketing">
+            <span class="consent-label">I consent to FWAG using photos of my project for marketing purposes (website, social media, proposals).</span>
+          </label>
+        </div>
+
+        <!-- Signature -->
+        <div class="signature-area" id="signature-area">
+          <p class="sig-label">Your Signature</p>
+          <div class="sig-tabs">
+            <button class="sig-tab active" data-mode="draw" id="tab-draw">Draw</button>
+            <button class="sig-tab" data-mode="type" id="tab-type">Type</button>
+          </div>
+
+          <div class="sig-draw-area" id="sig-draw-area">
+            <canvas id="sig-canvas"></canvas>
+            <div class="sig-draw-hint" id="sig-hint">Sign here</div>
+          </div>
+          <button class="sig-clear-btn" id="sig-clear">Clear signature</button>
+
+          <div class="sig-type-area" id="sig-type-area">
+            <input type="text" class="sig-type-input" id="sig-type-input" placeholder="Type your full name" maxlength="100" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Accept -->
+        <button class="accept-btn" id="accept-btn" disabled>Accept Estimate</button>
+        <p class="accept-error" id="accept-error"></p>
+        <p class="accept-note">By clicking "Accept Estimate," you are signing this document electronically. Your electronic signature has the same legal effect as a handwritten signature under the U.S. ESIGN Act and Florida UETA.</p>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <p class="footer-company">Florida Windows & Glass, Inc.</p>
+      <p>Miami Lakes, FL &middot; <a href="tel:+13052600011">(305) 260-0011</a> &middot; <a href="mailto:info@fwaginc.com">info@fwaginc.com</a></p>
+      <p style="margin-top:12px;">&copy; 2026 Florida Windows & Glass, Inc. All rights reserved. &middot; CGC-1511987</p>
+    </footer>
+
+  </div><!-- /proposal-content -->
+
+  <!-- Signature Pad Library (self-hosted would be in /lib — using CDN for now, we'll self-host before go-live) -->
+  <script src="/lib/signature_pad.umd.min.js"></script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ============ DOM REFS ============
+      const loadingScreen  = document.getElementById('loading-screen');
+      const errorScreen    = document.getElementById('error-screen');
+      const errorTitle     = document.getElementById('error-title');
+      const errorMessage   = document.getElementById('error-message');
+      const proposalContent = document.getElementById('proposal-content');
+      const acceptedBanner = document.getElementById('accepted-banner');
+      const acceptedDate   = document.getElementById('accepted-date');
+      const heroName       = document.getElementById('hero-customer-name');
+      const heroEstNum     = document.getElementById('hero-estimate-number');
+      const heroTotal      = document.getElementById('hero-total');
+      const pdfIframe      = document.getElementById('pdf-iframe');
+      const pdfDownload    = document.getElementById('pdf-download-link');
+      const pdfFallback    = document.getElementById('pdf-fallback');
+      const pdfFallbackLink = document.getElementById('pdf-fallback-link');
+      const consentSection = document.getElementById('consent-signature-section');
+      const versionWarning = document.getElementById('version-warning');
+      const consentTC      = document.getElementById('consent-tc');
+      const consentSMS     = document.getElementById('consent-sms');
+      const consentMkt     = document.getElementById('consent-marketing');
+      const acceptBtn      = document.getElementById('accept-btn');
+      const acceptError    = document.getElementById('accept-error');
+      const sigCanvas      = document.getElementById('sig-canvas');
+      const sigHint        = document.getElementById('sig-hint');
+      const sigClear       = document.getElementById('sig-clear');
+      const sigDrawArea    = document.getElementById('sig-draw-area');
+      const sigTypeArea    = document.getElementById('sig-type-area');
+      const sigTypeInput   = document.getElementById('sig-type-input');
+      const tabDraw        = document.getElementById('tab-draw');
+      const tabType        = document.getElementById('tab-type');
+
+      // ============ STATE ============
+      let proposalData = null;
+      let signatureMode = 'draw'; // 'draw' or 'type'
+      let signaturePad = null;
+
+      // ============ ROUTING ============
+      function getSlugFromURL() {
+        // URL pattern: /est/{slug}
+        const path = window.location.pathname;
+        const match = path.match(/^\/est\/([a-zA-Z0-9\-]+)$/);
+        return match ? match[1] : null;
+      }
+
+      // ============ SHOW/HIDE HELPERS ============
+      function showLoading() {
+        loadingScreen.style.display = 'flex';
+        errorScreen.style.display = 'none';
+        proposalContent.style.display = 'none';
+      }
+      function showError(title, message) {
+        loadingScreen.style.display = 'none';
+        errorScreen.style.display = 'flex';
+        proposalContent.style.display = 'none';
+        errorTitle.textContent = title || 'Something went wrong';
+        errorMessage.textContent = message || 'We couldn\'t load this proposal. Please try again or contact us.';
+      }
+      function showProposal() {
+        loadingScreen.style.display = 'none';
+        errorScreen.style.display = 'none';
+        proposalContent.style.display = 'block';
+      }
+
+      // ============ FORMAT HELPERS ============
+      function formatCurrency(amount) {
+        if (amount == null) return '';
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }).format(amount);
+      }
+      function formatDate(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      }
+
+      // ============ LOAD PROPOSAL ============
+      async function loadProposal(slug) {
+        showLoading();
+        try {
+          const res = await fetch('/api/proposal/' + encodeURIComponent(slug));
+          if (res.status === 404) {
+            showError('Proposal Not Found', 'This proposal link is invalid or has expired. Please contact FWAG for assistance.');
+            return;
+          }
+          if (!res.ok) {
+            showError('Unable to Load', 'There was a problem loading your proposal. Please try again in a moment.');
+            return;
+          }
+          proposalData = await res.json();
+
+          if (proposalData.status === 'processing') {
+            showError('Almost Ready', 'Your proposal is being prepared. Please refresh the page in a few seconds.');
+            return;
+          }
+          if (proposalData.status === 'error') {
+            showError('Proposal Error', 'There was a problem generating your proposal. FWAG has been notified and will resend it shortly.');
+            return;
+          }
+
+          renderProposal(proposalData);
+          showProposal();
+        } catch (err) {
+          console.error('Failed to load proposal:', err);
+          showError('Connection Error', 'Unable to reach our servers. Please check your internet connection and try again.');
+        }
+      }
+
+      // ============ RENDER PROPOSAL ============
+      function renderProposal(data) {
+        // Hero
+        heroName.textContent = 'Prepared for ' + (data.customer_name || 'Valued Customer');
+        heroEstNum.textContent = 'Estimate ' + (data.estimate_number || '');
+        heroTotal.textContent = formatCurrency(data.estimate_total);
+
+        // Salesperson
+        if (data.salesperson_name) {
+          heroEstNum.textContent += ' · Rep: ' + data.salesperson_name;
+        }
+
+        // PDF
+        if (data.pdf_url) {
+          pdfIframe.src = data.pdf_url;
+          pdfDownload.href = data.pdf_url;
+          pdfFallbackLink.href = data.pdf_url;
+
+          // Detect iframe load failure
+          pdfIframe.onerror = function () {
+            pdfIframe.style.display = 'none';
+            pdfFallback.style.display = 'block';
+          };
+        }
+
+        // Already signed?
+        if (data.signed && data.signed_version === data.version) {
+          acceptedBanner.style.display = 'block';
+          acceptedDate.textContent = formatDate(data.signed_at);
+          consentSection.style.display = 'none';
+          return;
+        }
+
+        // Signed but version mismatch (re-sign needed)
+        if (data.signed && data.signed_version !== data.version) {
+          versionWarning.style.display = 'block';
+        }
+
+        // Show consent section
+        consentSection.style.display = 'block';
+      }
+
+      // ============ SIGNATURE PAD SETUP ============
+      function initSignaturePad() {
+        const canvas = sigCanvas;
+        const container = sigDrawArea;
+
+        function resizeCanvas() {
+          const ratio = Math.max(window.devicePixelRatio || 1, 1);
+          canvas.width = container.offsetWidth * ratio;
+          canvas.height = 150 * ratio;
+          canvas.style.height = '150px';
+          canvas.getContext('2d').scale(ratio, ratio);
+          if (signaturePad) signaturePad.clear();
+        }
+
+        signaturePad = new SignaturePad(canvas, {
+          backgroundColor: 'rgba(255, 255, 255, 0)',
+          penColor: '#1B3A5C',
+          minWidth: 1.5,
+          maxWidth: 3
+        });
+
+        signaturePad.addEventListener('beginStroke', function () {
+          sigHint.style.opacity = '0';
+          updateAcceptButton();
+        });
+        signaturePad.addEventListener('endStroke', function () {
+          updateAcceptButton();
+        });
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+      }
+
+      // ============ SIGNATURE TAB SWITCHING ============
+      function setupSigTabs() {
+        tabDraw.addEventListener('click', function () {
+          signatureMode = 'draw';
+          tabDraw.classList.add('active');
+          tabType.classList.remove('active');
+          sigDrawArea.style.display = 'block';
+          sigTypeArea.style.display = 'none';
+          document.getElementById('sig-clear').style.display = 'inline';
+          updateAcceptButton();
+        });
+        tabType.addEventListener('click', function () {
+          signatureMode = 'type';
+          tabType.classList.add('active');
+          tabDraw.classList.remove('active');
+          sigDrawArea.style.display = 'none';
+          sigTypeArea.style.display = 'block';
+          document.getElementById('sig-clear').style.display = 'none';
+          updateAcceptButton();
+        });
+      }
+
+      // ============ CLEAR SIGNATURE ============
+      sigClear.addEventListener('click', function () {
+        if (signaturePad) {
+          signaturePad.clear();
+          sigHint.style.opacity = '1';
+        }
+        updateAcceptButton();
+      });
+
+      // ============ CONSENT & BUTTON STATE ============
+      function hasSignature() {
+        if (signatureMode === 'draw') {
+          return signaturePad && !signaturePad.isEmpty();
+        }
+        return sigTypeInput.value.trim().length >= 2;
+      }
+
+      function updateAcceptButton() {
+        const tcChecked = consentTC.checked;
+        const hasSig = hasSignature();
+        acceptBtn.disabled = !(tcChecked && hasSig);
+      }
+
+      consentTC.addEventListener('change', updateAcceptButton);
+      consentSMS.addEventListener('change', updateAcceptButton);
+      consentMkt.addEventListener('change', updateAcceptButton);
+      sigTypeInput.addEventListener('input', updateAcceptButton);
+
+      // ============ ACCEPT / SUBMIT ============
+      async function handleAccept() {
+        if (acceptBtn.disabled) return;
+        acceptError.style.display = 'none';
+        acceptBtn.classList.add('loading');
+        acceptBtn.disabled = true;
+
+        let signatureData;
+        if (signatureMode === 'draw') {
+          signatureData = signaturePad.toDataURL('image/png');
+        } else {
+          signatureData = 'typed:' + sigTypeInput.value.trim();
+        }
+
+        const payload = {
+          sms_consent: consentSMS.checked,
+          marketing_consent: consentMkt.checked,
+          signature_data: signatureData,
+          signature_type: signatureMode
+        };
+
+        try {
+          const slug = getSlugFromURL();
+          const res = await fetch('/api/proposal/' + encodeURIComponent(slug) + '/accept', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            const body = await res.json().catch(function () { return {}; });
+            throw new Error(body.error || 'Failed to submit. Please try again.');
+          }
+
+          // Success — show accepted state
+          const result = await res.json();
+          acceptedBanner.style.display = 'block';
+          acceptedDate.textContent = formatDate(result.signed_at || new Date().toISOString());
+          consentSection.style.display = 'none';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        } catch (err) {
+          console.error('Accept failed:', err);
+          acceptError.textContent = err.message || 'Something went wrong. Please try again.';
+          acceptError.style.display = 'block';
+          acceptBtn.classList.remove('loading');
+          acceptBtn.disabled = false;
+        }
+      }
+
+      acceptBtn.addEventListener('click', handleAccept);
+
+      // ============ INIT ============
+      function init() {
+        const slug = getSlugFromURL();
+        if (!slug) {
+          showError('Invalid Link', 'This URL doesn\'t contain a valid proposal. Please check the link you received.');
+          return;
+        }
+        initSignaturePad();
+        setupSigTabs();
+        loadProposal(slug);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
