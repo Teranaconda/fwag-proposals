@@ -1,4 +1,4 @@
-﻿const fetch = require('node-fetch');
+const fetch = require('node-fetch');
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -7,7 +7,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-// --- Helper: Get fresh Zoho access token ---
 async function getZohoToken() {
   console.log('[ZOHO] Refreshing access token...');
   const params = new URLSearchParams({
@@ -27,7 +26,6 @@ async function getZohoToken() {
   return data.access_token;
 }
 
-// --- Helper: Download PDF from Zoho ---
 async function downloadZohoPDF(token, estimateId) {
   const url = 'https://www.zohoapis.com/books/v3/estimates/' + estimateId + '?organization_id=' + process.env.ZOHO_ORG_ID + '&accept=pdf';
   console.log('[ZOHO] Downloading PDF for estimate:', estimateId);
@@ -43,9 +41,8 @@ async function downloadZohoPDF(token, estimateId) {
   return buffer;
 }
 
-// --- Helper: Upload PDF to GHL Media Storage ---
 async function uploadToGHL(pdfBuffer, filename) {
-  console.log('[GHL] Uploading PDF to media storage:', filename, 'size:', pdfBuffer.length);
+  console.log('[GHL] Uploading PDF:', filename, 'size:', pdfBuffer.length);
   const FormData = require('form-data');
   const form = new FormData();
   form.append('file', pdfBuffer, { filename: filename, contentType: 'application/pdf' });
@@ -60,18 +57,13 @@ async function uploadToGHL(pdfBuffer, filename) {
     body: form
   });
   const responseText = await res.text();
-  console.log('[GHL] Upload response status:', res.status);
-  console.log('[GHL] Upload response body:', responseText);
+  console.log('[GHL] Upload response status:', res.status, 'body:', responseText);
 
   let data;
   try {
     data = JSON.parse(responseText);
   } catch (e) {
     throw new Error('GHL upload returned non-JSON: ' + responseText);
-  }
-
-  if (res.status !== 200) {
-    throw new Error('GHL upload failed: ' + responseText);
   }
 
   const pdfUrl = data.url || data.fileUrl || (data.uploadedFiles && data.uploadedFiles[0] && data.uploadedFiles[0].url);
@@ -82,7 +74,6 @@ async function uploadToGHL(pdfBuffer, filename) {
   return pdfUrl;
 }
 
-// --- Helper: Trigger GHL workflow ---
 async function triggerGHLWorkflow(proposalData) {
   console.log('[GHL] Triggering workflow...');
   const res = await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
@@ -97,16 +88,14 @@ async function triggerGHLWorkflow(proposalData) {
       salesperson_name: proposalData.salesperson_name
     })
   });
-  console.log('[GHL] Workflow trigger response status:', res.status);
+  console.log('[GHL] Workflow trigger status:', res.status);
 }
 
-// --- Helper: Generate slug ---
 function generateSlug(estimateNumber) {
   const hash = crypto.randomBytes(4).toString('hex');
   return estimateNumber + '-' + hash;
 }
 
-// --- Main handler ---
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -114,7 +103,7 @@ exports.handler = async (event) => {
 
   try {
     const payload = JSON.parse(event.body);
-    console.log('[WEBHOOK] Received payload for estimate:', payload.estimate_number);
+    console.log('[WEBHOOK] Received:', payload.estimate_number);
 
     if (payload.secret !== process.env.WEBHOOK_SECRET) {
       return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
@@ -123,7 +112,6 @@ exports.handler = async (event) => {
     const estimateId = payload.estimate_id;
     const estimateNumber = payload.estimate_number || '';
 
-    // --- Idempotency check ---
     const { data: existing } = await supabase
       .from('proposals')
       .select('*')
@@ -154,13 +142,11 @@ exports.handler = async (event) => {
         }
       }
       if (existing.status === 'processing') {
-        // Previous attempt got stuck — delete and re-create
-        console.log('[SUPABASE] Stuck processing row found, deleting and retrying...');
+        console.log('[SUPABASE] Stuck row, deleting...');
         await supabase.from('proposals').delete().eq('id', existing.id);
       }
     }
 
-    // --- Create proposal record ---
     let proposalId;
     let slug;
 
@@ -169,7 +155,7 @@ exports.handler = async (event) => {
       slug = existing.slug;
     } else {
       slug = generateSlug(estimateNumber);
-      console.log('[SUPABASE] Creating new proposal with slug:', slug);
+      console.log('[SUPABASE] Creating slug:', slug);
       const { data: newRow, error: insertError } = await supabase
         .from('proposals')
         .insert({
@@ -192,22 +178,14 @@ exports.handler = async (event) => {
         throw new Error('Supabase insert failed: ' + JSON.stringify(insertError));
       }
       proposalId = newRow.id;
-      console.log('[SUPABASE] Row created, id:', proposalId);
     }
 
-    // --- Fetch PDF from Zoho ---
     const zohoToken = await getZohoToken();
     const pdfBuffer = await downloadZohoPDF(zohoToken, estimateId);
-
-    // --- Upload PDF to GHL ---
     const pdfFilename = estimateNumber + '.pdf';
     const ghlPdfUrl = await uploadToGHL(pdfBuffer, pdfFilename);
-
-    // --- Compute document hash ---
     const docHash = crypto.createHash('sha256').update(pdfBuffer).digest('hex');
-    console.log('[WEBHOOK] Document hash computed');
 
-    // --- Update proposal record to ready ---
     await supabase
       .from('proposals')
       .update({
@@ -223,9 +201,7 @@ exports.handler = async (event) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', proposalId);
-    console.log('[SUPABASE] Updated to ready');
 
-    // --- Trigger GHL workflow ---
     await triggerGHLWorkflow({
       customer_name: payload.customer_name,
       customer_email: payload.customer_email,
