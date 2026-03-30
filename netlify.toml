@@ -11,13 +11,13 @@
   status = 200
 
 [[redirects]]
-  from = "/api/proposal/:slug"
-  to = "/.netlify/functions/proposal"
+  from = "/api/proposal/*/accept"
+  to = "/.netlify/functions/proposal-accept"
   status = 200
 
 [[redirects]]
-  from = "/api/proposal/:slug/accept"
-  to = "/.netlify/functions/proposal-accept"
+  from = "/api/proposal/*"
+  to = "/.netlify/functions/proposal"
   status = 200
 
 [[redirects]]

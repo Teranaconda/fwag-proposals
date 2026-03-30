@@ -1,232 +1,318 @@
-const fetch = require('node-fetch');
-const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
+const fetch = require('node-fetch');
+const FormData = require('form-data');
+const crypto = require('crypto');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
-
-async function getZohoToken() {
-  console.log('[ZOHO] Refreshing access token...');
-  const params = new URLSearchParams({
-    grant_type: 'refresh_token',
-    client_id: process.env.ZOHO_CLIENT_ID,
-    client_secret: process.env.ZOHO_CLIENT_SECRET,
-    refresh_token: process.env.ZOHO_REFRESH_TOKEN
-  });
-  const res = await fetch('https://accounts.zoho.com/oauth/v2/token?' + params.toString(), {
-    method: 'POST'
-  });
-  const data = await res.json();
-  if (!data.access_token) {
-    throw new Error('Zoho token refresh failed: ' + JSON.stringify(data));
-  }
-  console.log('[ZOHO] Token refreshed successfully');
-  return data.access_token;
-}
-
-async function downloadZohoPDF(token, estimateId) {
-  const url = 'https://www.zohoapis.com/books/v3/estimates/' + estimateId + '?organization_id=' + process.env.ZOHO_ORG_ID + '&accept=pdf';
-  console.log('[ZOHO] Downloading PDF for estimate:', estimateId);
-  const res = await fetch(url, {
-    headers: { 'Authorization': 'Zoho-oauthtoken ' + token }
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error('Zoho PDF download failed: ' + res.status + ' ' + res.statusText + ' Body: ' + body);
-  }
-  const buffer = await res.buffer();
-  console.log('[ZOHO] PDF downloaded, size:', buffer.length, 'bytes');
-  return buffer;
-}
-
-async function uploadToGHL(pdfBuffer, filename) {
-  console.log('[GHL] Uploading PDF:', filename, 'size:', pdfBuffer.length);
-  const FormData = require('form-data');
-  const form = new FormData();
-  form.append('file', pdfBuffer, { filename: filename, contentType: 'application/pdf' });
-
-  const res = await fetch('https://services.leadconnectorhq.com/medias/upload-file', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + process.env.GHL_PRIVATE_TOKEN,
-      'Version': '2021-07-28',
-      ...form.getHeaders()
-    },
-    body: form
-  });
-  const responseText = await res.text();
-  console.log('[GHL] Upload response status:', res.status, 'body:', responseText);
-
-  let data;
-  try {
-    data = JSON.parse(responseText);
-  } catch (e) {
-    throw new Error('GHL upload returned non-JSON: ' + responseText);
-  }
-
-  const pdfUrl = data.url || data.fileUrl || (data.uploadedFiles && data.uploadedFiles[0] && data.uploadedFiles[0].url);
-  if (!pdfUrl) {
-    throw new Error('GHL upload succeeded but no URL in response: ' + responseText);
-  }
-  console.log('[GHL] PDF URL:', pdfUrl);
-  return pdfUrl;
-}
-
-async function triggerGHLWorkflow(proposalData) {
-  console.log('[GHL] Triggering workflow...');
-  const res = await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      customer_name: proposalData.customer_name,
-      customer_email: proposalData.customer_email,
-      customer_phone: proposalData.customer_phone,
-      proposal_url: process.env.SITE_URL + '/est/' + proposalData.slug,
-      estimate_number: proposalData.estimate_number,
-      salesperson_name: proposalData.salesperson_name
-    })
-  });
-  console.log('[GHL] Workflow trigger status:', res.status);
-}
-
-function generateSlug(estimateNumber) {
-  const hash = crypto.randomBytes(4).toString('hex');
-  return estimateNumber + '-' + hash;
-}
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 exports.handler = async (event) => {
+  console.log('Webhook received');
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
+  let body;
   try {
-    const payload = JSON.parse(event.body);
-    console.log('[WEBHOOK] Received:', payload.estimate_number);
+    body = JSON.parse(event.body);
+  } catch (e) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
+  }
 
-    if (payload.secret !== process.env.WEBHOOK_SECRET) {
-      return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
-    }
+  // Validate shared secret
+  if (body.secret !== process.env.WEBHOOK_SECRET) {
+    console.log('Invalid secret');
+    return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
+  }
 
-    const estimateId = payload.estimate_id;
-    const estimateNumber = payload.estimate_number || '';
+  const {
+    estimate_id,
+    estimate_number,
+    customer_id,
+    customer_name,
+    customer_email,
+    customer_phone,
+    salesperson_name,
+    total
+  } = body;
 
-    const { data: existing } = await supabase
+  if (!estimate_id || !estimate_number) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Missing estimate_id or estimate_number' }) };
+  }
+
+  console.log(`Processing estimate ${estimate_number} (${estimate_id})`);
+
+  try {
+    // Check for existing proposal (idempotency)
+    const { data: existing, error: fetchError } = await supabase
       .from('proposals')
       .select('*')
-      .eq('estimate_id', estimateId)
-      .single();
+      .eq('estimate_id', estimate_id)
+      .maybeSingle();
 
-    if (existing) {
-      console.log('[SUPABASE] Found existing, status:', existing.status);
-      if (existing.status === 'ready') {
-        const totalChanged = parseFloat(payload.estimate_total) !== parseFloat(existing.estimate_total);
-        if (!totalChanged) {
-          return { statusCode: 200, body: JSON.stringify({ status: 'already_ready', slug: existing.slug, proposal_url: process.env.SITE_URL + '/est/' + existing.slug }) };
-        }
-        await supabase
-          .from('proposals')
-          .update({ status: 'processing', version: existing.version + 1, updated_at: new Date().toISOString() })
-          .eq('id', existing.id);
-        if (existing.signed) {
-          await supabase.from('consent_events').insert({
-            proposal_id: existing.id,
-            event_type: 'signature_invalidated',
-            estimate_version: existing.version
-          });
-          await supabase
-            .from('proposals')
-            .update({ signed: false, signed_at: null, signed_version: null, signature_data: null, signer_ip: null, document_hash: null })
-            .eq('id', existing.id);
-        }
-      }
-      if (existing.status === 'processing') {
-        console.log('[SUPABASE] Stuck row, deleting...');
-        await supabase.from('proposals').delete().eq('id', existing.id);
-      }
+    if (fetchError) {
+      console.error('Supabase fetch error:', fetchError);
+      throw new Error('Database error');
     }
+
+    // If stuck in processing, delete and retry
+    if (existing && existing.status === 'processing') {
+      console.log('Found stuck processing row, deleting and retrying');
+      await supabase.from('proposals').delete().eq('id', existing.id);
+    }
+
+    // If ready and same version, return success
+    if (existing && existing.status === 'ready') {
+      const totalChanged = parseFloat(existing.estimate_total) !== parseFloat(total);
+      if (!totalChanged) {
+        console.log('Proposal already ready, no changes detected');
+        return {
+          statusCode: 200,
+          body: JSON.stringify({
+            status: 'success',
+            message: 'Proposal already exists',
+            proposal_url: `${process.env.SITE_URL}/est/${existing.slug}`
+          })
+        };
+      }
+      console.log('Estimate changed, re-processing');
+    }
+
+    // Generate slug
+    const hash = crypto.randomBytes(4).toString('hex');
+    const slug = existing ? existing.slug : `${estimate_number}-${hash}`.toLowerCase();
+    const version = existing ? (existing.version || 1) + 1 : 1;
+
+    // Create or update Supabase row with processing status
+    const proposalData = {
+      estimate_id,
+      estimate_number,
+      organization_id: process.env.ZOHO_ORG_ID,
+      customer_name,
+      customer_email: customer_email || null,
+      customer_phone: customer_phone || null,
+      salesperson_name: salesperson_name || null,
+      estimate_total: parseFloat(total) || 0,
+      slug,
+      version,
+      status: 'processing',
+      updated_at: new Date().toISOString()
+    };
 
     let proposalId;
-    let slug;
-
-    if (existing && existing.status !== 'processing') {
-      proposalId = existing.id;
-      slug = existing.slug;
-    } else {
-      slug = generateSlug(estimateNumber);
-      console.log('[SUPABASE] Creating slug:', slug);
-      const { data: newRow, error: insertError } = await supabase
+    if (existing) {
+      const { data: updated, error: updateError } = await supabase
         .from('proposals')
-        .insert({
-          estimate_id: estimateId,
-          estimate_number: estimateNumber,
-          organization_id: payload.organization_id || process.env.ZOHO_ORG_ID,
-          customer_name: payload.customer_name || '',
-          customer_email: payload.customer_email || null,
-          customer_phone: payload.customer_phone || null,
-          salesperson_name: payload.salesperson_name || null,
-          estimate_total: payload.estimate_total || null,
-          pdf_url: 'pending',
-          slug: slug,
-          status: 'processing'
-        })
+        .update(proposalData)
+        .eq('id', existing.id)
         .select()
         .single();
-
-      if (insertError) {
-        throw new Error('Supabase insert failed: ' + JSON.stringify(insertError));
-      }
-      proposalId = newRow.id;
+      if (updateError) throw updateError;
+      proposalId = updated.id;
+    } else {
+      proposalData.created_at = new Date().toISOString();
+      const { data: inserted, error: insertError } = await supabase
+        .from('proposals')
+        .insert(proposalData)
+        .select()
+        .single();
+      if (insertError) throw insertError;
+      proposalId = inserted.id;
     }
 
-    const zohoToken = await getZohoToken();
-    const pdfBuffer = await downloadZohoPDF(zohoToken, estimateId);
-    const pdfFilename = estimateNumber + '.pdf';
-    const ghlPdfUrl = await uploadToGHL(pdfBuffer, pdfFilename);
-    const docHash = crypto.createHash('sha256').update(pdfBuffer).digest('hex');
+    console.log(`Supabase row ${existing ? 'updated' : 'created'}: ${proposalId}`);
 
-    await supabase
+    // Refresh Zoho access token
+    const tokenParams = new URLSearchParams({
+      grant_type: 'refresh_token',
+      client_id: process.env.ZOHO_CLIENT_ID,
+      client_secret: process.env.ZOHO_CLIENT_SECRET,
+      refresh_token: process.env.ZOHO_REFRESH_TOKEN
+    });
+
+    const tokenRes = await fetch(`https://accounts.zoho.com/oauth/v2/token?${tokenParams.toString()}`, {
+      method: 'POST'
+    });
+    const tokenData = await tokenRes.json();
+
+    if (!tokenData.access_token) {
+      console.error('Token refresh failed:', tokenData);
+      throw new Error('Zoho token refresh failed');
+    }
+
+    const zohoToken = tokenData.access_token;
+    console.log('Zoho token refreshed');
+
+    // Fetch estimate details from Zoho API (for estimate_url and contact person names)
+    const estimateDetailRes = await fetch(
+      `https://www.zohoapis.com/books/v3/estimates/${estimate_id}?organization_id=${process.env.ZOHO_ORG_ID}`,
+      { headers: { 'Authorization': `Zoho-oauthtoken ${zohoToken}` } }
+    );
+    const estimateDetailData = await estimateDetailRes.json();
+
+    let estimateUrl = null;
+    let customerFirstName = null;
+    let customerLastName = null;
+
+    if (estimateDetailData.estimate) {
+      estimateUrl = estimateDetailData.estimate.estimate_url || null;
+      // Trim trailing space if present (Zoho sometimes adds it)
+      if (estimateUrl) estimateUrl = estimateUrl.trim();
+
+      // Get first/last name from contact_persons_details
+      const persons = estimateDetailData.estimate.contact_persons_details;
+      if (persons && persons.length > 0) {
+        customerFirstName = persons[0].first_name || null;
+        customerLastName = persons[0].last_name || null;
+      }
+      console.log(`Estimate URL: ${estimateUrl ? 'found' : 'not found'}`);
+      console.log(`Contact person: ${customerFirstName} ${customerLastName}`);
+    } else {
+      console.warn('Could not fetch estimate details from Zoho API');
+    }
+
+    // Download PDF from Zoho
+    const pdfRes = await fetch(
+      `https://www.zohoapis.com/books/v3/estimates/${estimate_id}?organization_id=${process.env.ZOHO_ORG_ID}&accept=pdf`,
+      { headers: { 'Authorization': `Zoho-oauthtoken ${zohoToken}` } }
+    );
+
+    if (!pdfRes.ok) {
+      console.error('PDF download failed:', pdfRes.status, pdfRes.statusText);
+      throw new Error('PDF download failed');
+    }
+
+    const pdfBuffer = await pdfRes.buffer();
+    console.log(`PDF downloaded: ${pdfBuffer.length} bytes`);
+
+    // Compute document hash
+    const documentHash = crypto.createHash('sha256').update(pdfBuffer).digest('hex');
+
+    // Upload PDF to GHL Media Storage
+    const form = new FormData();
+    form.append('file', pdfBuffer, {
+      filename: `${estimate_number}.pdf`,
+      contentType: 'application/pdf'
+    });
+
+    const ghlUploadRes = await fetch(
+      'https://services.leadconnectorhq.com/medias/upload-file',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.GHL_PRIVATE_TOKEN}`,
+          'Version': '2021-07-28',
+          ...form.getHeaders()
+        },
+        body: form
+      }
+    );
+
+    const ghlUploadText = await ghlUploadRes.text();
+    let ghlUploadData;
+    try {
+      ghlUploadData = JSON.parse(ghlUploadText);
+    } catch (e) {
+      console.error('GHL upload response not JSON:', ghlUploadText);
+      throw new Error('GHL upload failed - invalid response');
+    }
+
+    // GHL may return 200 or 201 - check for URL in response
+    const pdfUrl = ghlUploadData.url || (ghlUploadData.data && ghlUploadData.data.url) || ghlUploadData.fileUrl;
+    if (!pdfUrl) {
+      console.error('GHL upload - no URL in response:', ghlUploadData);
+      throw new Error('GHL upload failed - no URL returned');
+    }
+
+    console.log(`PDF uploaded to GHL: ${pdfUrl}`);
+
+    // Update Supabase to ready with PDF URL, estimate_url, and names
+    const { error: readyError } = await supabase
       .from('proposals')
       .update({
-        pdf_url: ghlPdfUrl,
+        pdf_url: pdfUrl,
         pdf_uploaded_at: new Date().toISOString(),
-        document_hash: docHash,
+        document_hash: documentHash,
+        estimate_url: estimateUrl,
+        customer_first_name: customerFirstName,
+        customer_last_name: customerLastName,
         status: 'ready',
-        customer_name: payload.customer_name || existing?.customer_name || '',
-        customer_email: payload.customer_email || existing?.customer_email || null,
-        customer_phone: payload.customer_phone || existing?.customer_phone || null,
-        salesperson_name: payload.salesperson_name || existing?.salesperson_name || null,
-        estimate_total: payload.estimate_total || existing?.estimate_total || null,
         updated_at: new Date().toISOString()
       })
       .eq('id', proposalId);
 
-    await triggerGHLWorkflow({
-      customer_name: payload.customer_name,
-      customer_email: payload.customer_email,
-      customer_phone: payload.customer_phone,
-      slug: slug,
-      estimate_number: estimateNumber,
-      salesperson_name: payload.salesperson_name
+    if (readyError) {
+      console.error('Supabase ready update error:', readyError);
+      throw readyError;
+    }
+
+    console.log('Supabase updated to ready');
+
+    // Trigger GHL workflow
+    const proposalUrl = `${process.env.SITE_URL}/est/${slug}`;
+
+    const ghlWorkflowRes = await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer_name: customerFirstName && customerLastName
+          ? `${customerFirstName} ${customerLastName}`
+          : customer_name,
+        customer_email: customer_email || '',
+        customer_phone: customer_phone || '',
+        proposal_url: proposalUrl,
+        estimate_number,
+        salesperson_name: salesperson_name || ''
+      })
     });
 
-    console.log('[WEBHOOK] Complete:', process.env.SITE_URL + '/est/' + slug);
+    console.log(`GHL workflow triggered: ${ghlWorkflowRes.status}`);
+
+    // If signing already happened on a previous version, invalidate
+    if (existing && existing.signed && version > (existing.signed_version || 0)) {
+      await supabase
+        .from('proposals')
+        .update({ signed: false, signed_at: null, signed_version: null, signature_data: null })
+        .eq('id', proposalId);
+
+      await supabase
+        .from('consent_events')
+        .insert({
+          id: crypto.randomUUID(),
+          proposal_id: proposalId,
+          event_type: 'signature_invalidated',
+          estimate_version: version,
+          created_at: new Date().toISOString()
+        });
+
+      console.log('Previous signature invalidated due to version change');
+    }
 
     return {
       statusCode: 200,
       body: JSON.stringify({
         status: 'success',
-        slug: slug,
-        proposal_url: process.env.SITE_URL + '/est/' + slug
+        proposal_url: proposalUrl,
+        slug
       })
     };
 
-  } catch (err) {
-    console.error('[WEBHOOK ERROR]', err.message);
+  } catch (error) {
+    console.error('Processing error:', error);
+
+    // Try to mark as error in Supabase
+    try {
+      await supabase
+        .from('proposals')
+        .update({ status: 'error', updated_at: new Date().toISOString() })
+        .eq('estimate_id', estimate_id);
+    } catch (e) {
+      console.error('Failed to mark error status:', e);
+    }
+
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Internal server error', detail: err.message })
+      body: JSON.stringify({ status: 'error', message: error.message })
     };
   }
 };
