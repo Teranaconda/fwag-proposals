@@ -143,11 +143,6 @@ function showConsentModal() {
 
     modal.style.display = 'flex';
 
-    // Enable button only when checkbox is checked
-    checkbox.addEventListener('change', function() {
-        viewBtn.disabled = !this.checked;
-    });
-
     // Handle "View My Estimate" click
     viewBtn.addEventListener('click', async function() {
         if (!checkbox.checked) return;
