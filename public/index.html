@@ -1,725 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- SECTION:HEAD -->
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your FWAG Estimate</title>
-  <style>
-    :root {
-      --fwag-red: #B22234;
-      --fwag-blue: #002868;
-      --fwag-white: #FFFFFF;
-      --fwag-light-gray: #F5F5F5;
-      --fwag-dark-gray: #333333;
-      --fwag-medium-gray: #666666;
-      --fwag-border: #E0E0E0;
-      --fwag-gold: #C9A84C;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      color: var(--fwag-dark-gray);
-      background: var(--fwag-light-gray);
-      line-height: 1.6;
-    }
-
-    .loading-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: var(--fwag-white);
-    }
-
-    .loading-screen .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid var(--fwag-border);
-      border-top-color: var(--fwag-blue);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .loading-screen p {
-      margin-top: 16px;
-      color: var(--fwag-medium-gray);
-      font-size: 16px;
-    }
-
-    .error-screen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: var(--fwag-white);
-      padding: 24px;
-      text-align: center;
-    }
-
-    .error-screen h2 {
-      color: var(--fwag-red);
-      margin-bottom: 12px;
-    }
-
-    .error-screen p {
-      color: var(--fwag-medium-gray);
-      max-width: 400px;
-    }
-
-    .proposal-page { display: none; }
-
-    .hero {
-      background: linear-gradient(135deg, var(--fwag-blue) 0%, #001a4d 100%);
-      color: var(--fwag-white);
-      padding: 48px 24px 40px;
-      text-align: center;
-    }
-
-    .hero img.logo {
-      max-width: 200px;
-      height: auto;
-      margin-bottom: 20px;
-    }
-
-    .hero h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .hero .estimate-info {
-      font-size: 16px;
-      opacity: 0.85;
-      margin-bottom: 16px;
-    }
-
-    .hero .total-badge {
-      display: inline-block;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 8px;
-      padding: 12px 28px;
-      font-size: 32px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .section {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 32px 20px;
-    }
-
-    .section-card {
-      background: var(--fwag-white);
-      border-radius: 12px;
-      padding: 32px 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-
-    .section-card h2 {
-      color: var(--fwag-blue);
-      font-size: 22px;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid var(--fwag-border);
-    }
-
-    .section-card p {
-      color: var(--fwag-medium-gray);
-      margin-bottom: 12px;
-    }
-
-    .section-card p:last-child { margin-bottom: 0; }
-
-    .pdf-section h2 { border-bottom: none; margin-bottom: 8px; }
-
-    .pdf-container {
-      border: 1px solid var(--fwag-border);
-      border-radius: 8px;
-      overflow: hidden;
-      background: #525659;
-      max-height: 700px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .pdf-container canvas {
-      display: block;
-      margin: 8px auto;
-      max-width: 100%;
-      height: auto !important;
-    }
-
-    .pdf-loading {
-      text-align: center;
-      padding: 40px;
-      color: #ccc;
-      font-size: 16px;
-    }
-
-    .pdf-error {
-      text-align: center;
-      padding: 40px;
-      color: #ff6b6b;
-    }
-
-    .download-btn {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 10px 20px;
-      background: var(--fwag-blue);
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
-
-    .download-btn:hover { background: #001a4d; }
-
-    .benefits-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 16px;
-    }
-
-    .benefit-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-    }
-
-    .benefit-icon {
-      flex-shrink: 0;
-      width: 36px;
-      height: 36px;
-      background: var(--fwag-light-gray);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-
-    .benefit-text { font-size: 14px; color: var(--fwag-dark-gray); }
-    .benefit-text strong { display: block; margin-bottom: 2px; }
-
-    @media (max-width: 600px) {
-      .benefits-grid { grid-template-columns: 1fr; }
-    }
-
-    .process-steps { counter-reset: step; margin-top: 16px; }
-
-    .process-step {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 20px;
-      position: relative;
-    }
-
-    .process-step:last-child { margin-bottom: 0; }
-
-    .step-number {
-      flex-shrink: 0;
-      width: 36px;
-      height: 36px;
-      background: var(--fwag-blue);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 16px;
-    }
-
-    .step-content h3 {
-      font-size: 16px;
-      color: var(--fwag-dark-gray);
-      margin-bottom: 4px;
-    }
-
-    .step-content p {
-      font-size: 14px;
-      color: var(--fwag-medium-gray);
-      margin-bottom: 0;
-    }
-
-    .review-card {
-      background: var(--fwag-light-gray);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-
-    .review-card:last-child { margin-bottom: 0; }
-
-    .review-stars { color: var(--fwag-gold); font-size: 16px; margin-bottom: 6px; }
-
-    .review-text {
-      font-size: 14px;
-      color: var(--fwag-dark-gray);
-      font-style: italic;
-      margin-bottom: 6px;
-    }
-
-    .review-author {
-      font-size: 13px;
-      color: var(--fwag-medium-gray);
-      font-weight: 600;
-    }
-
-    .license-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .license-badge {
-      background: var(--fwag-light-gray);
-      border: 1px solid var(--fwag-border);
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--fwag-dark-gray);
-    }
-
-    .consent-section {
-      border: 2px solid var(--fwag-blue);
-    }
-
-    .consent-section h2 { color: var(--fwag-blue); }
-
-    .consent-checkbox-wrapper {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      background: var(--fwag-light-gray);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
-      cursor: pointer;
-    }
-
-    .consent-checkbox-wrapper input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      margin-top: 2px;
-      flex-shrink: 0;
-      accent-color: var(--fwag-blue);
-    }
-
-    .consent-label {
-      font-size: 13px;
-      color: var(--fwag-medium-gray);
-      line-height: 1.5;
-    }
-
-    .accept-btn {
-      display: block;
-      width: 100%;
-      padding: 16px 24px;
-      background: var(--fwag-red);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 18px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      text-align: center;
-    }
-
-    .accept-btn:hover { background: #8b1a29; }
-    .accept-btn:active { transform: scale(0.98); }
-
-    .accept-btn:disabled {
-      background: #999;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .accept-subtitle {
-      text-align: center;
-      font-size: 13px;
-      color: var(--fwag-medium-gray);
-      margin-top: 12px;
-    }
-
-    .accepted-banner {
-      display: none;
-      background: #e8f5e9;
-      border: 2px solid #4caf50;
-      border-radius: 12px;
-      padding: 24px;
-      text-align: center;
-      margin-bottom: 24px;
-    }
-
-    .accepted-banner h2 {
-      color: #2e7d32;
-      border: none;
-      padding: 0;
-      margin-bottom: 8px;
-    }
-
-    .accepted-banner p { color: #4caf50; }
-
-    .footer {
-      text-align: center;
-      padding: 32px 20px;
-      color: var(--fwag-medium-gray);
-      font-size: 13px;
-    }
-
-    .footer a {
-      color: var(--fwag-blue);
-      text-decoration: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Estimate — Florida Windows & Glass</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
+<!-- /SECTION:HEAD -->
 <body>
 
-  <div id="loading" class="loading-screen">
+<!-- SECTION:LOADING_AND_ERROR -->
+<div id="loading-screen" class="loading-screen">
     <div class="spinner"></div>
     <p>Loading your estimate...</p>
-  </div>
+</div>
 
-  <div id="error" class="error-screen">
-    <h2>Estimate Not Found</h2>
-    <p id="error-message">We couldn't find this estimate. Please check the link or contact FWAG at <a href="tel:3052600011" style="color: var(--fwag-blue);">(305) 260-0011</a>.</p>
-  </div>
+<div id="error-screen" class="error-screen" style="display:none;">
+    <h2 id="error-title">Estimate Not Found</h2>
+    <p id="error-message">This estimate link may be invalid or expired. Please contact Florida Windows & Glass at (305) 260-0011.</p>
+</div>
+<!-- /SECTION:LOADING_AND_ERROR -->
 
-  <div id="proposal" class="proposal-page">
-
-    <div class="hero">
-      <img class="logo" src="https://storage.googleapis.com/msgsndr/ygg3IqHNNUpSXx9l4o0V/media/67e7f12c2b7c1f202be0f19d.png" alt="FWAG Logo">
-      <h1>Hi <span id="hero-name"></span>, your estimate is ready!</h1>
-      <div class="estimate-info">Estimate <span id="hero-estimate-number"></span></div>
-      <div class="total-badge">$<span id="hero-total">0.00</span></div>
-    </div>
-
-    <div class="section">
-
-      <div class="section-card pdf-section">
-        <h2>Your Estimate</h2>
-        <div id="pdf-container" class="pdf-container">
-          <div class="pdf-loading" id="pdf-loading">Loading PDF...</div>
+<!-- SECTION:CONSENT_MODAL -->
+<div id="consent-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <img src="https://images.leadconnectorhq.com/image/f_webp/q_95/r_1200/u_https://assets.cdn.filesafe.space/cLMRos8MRn2mKiY6pCBP/media/6682b3b5f5e8be78f5fa66f3.png" alt="FWAG Logo" class="modal-logo">
+        <h2>Welcome!</h2>
+        <p>Before viewing your estimate, please consent to receive text message updates about your project from Florida Windows & Glass, Inc.</p>
+        <div class="modal-consent-row">
+            <label class="checkbox-label">
+                <input type="checkbox" id="modal-sms-checkbox">
+                <span>I consent to receive text message updates about my project from Florida Windows & Glass, Inc. at the phone number provided. Message frequency varies. Message and data rates may apply. Reply STOP to opt out at any time.</span>
+            </label>
         </div>
-        <a id="pdf-download" class="download-btn" href="#" target="_blank" rel="noopener">Download PDF</a>
-      </div>
+        <button id="modal-view-btn" class="modal-btn" disabled>View My Estimate</button>
+        <p class="modal-fine-print">You can also call us at <a href="tel:3052600011">(305) 260-0011</a> with any questions.</p>
+    </div>
+</div>
+<!-- /SECTION:CONSENT_MODAL -->
 
-      <div class="section-card">
-        <h2>About Florida Windows &amp; Glass</h2>
-        <p>Florida Windows &amp; Glass Inc. (FWAG) is a licensed and insured impact window and door installer serving Miami-Dade, Broward, and Palm Beach counties. We specialize in protecting Florida homes with code-compliant impact-resistant products.</p>
-        <p>We handle everything from measurement to permitting to final inspection — so you get a single point of contact from estimate to completion.</p>
-      </div>
+<!-- SECTION:PROPOSAL_CONTENT -->
+<div id="proposal-content" style="display:none;">
+<!-- /SECTION:PROPOSAL_CONTENT -->
 
-      <div class="section-card">
-        <h2>Our Process</h2>
-        <div class="process-steps">
-          <div class="process-step">
+<!-- SECTION:HERO -->
+<div class="hero">
+    <img src="https://images.leadconnectorhq.com/image/f_webp/q_95/r_1200/u_https://assets.cdn.filesafe.space/cLMRos8MRn2mKiY6pCBP/media/6682b3b5f5e8be78f5fa66f3.png" alt="FWAG Logo" class="hero-logo">
+    <h1>Hi <span id="customer-name"></span>, your estimate is ready!</h1>
+    <p class="estimate-badge">Estimate <span id="estimate-number"></span></p>
+    <p class="estimate-total-badge" id="estimate-total-badge">$0.00</p>
+</div>
+<!-- /SECTION:HERO -->
+
+<!-- SECTION:PDF_VIEWER -->
+<div class="section-card">
+    <div class="pdf-container" id="pdf-container">
+        <div id="pdf-loading" class="pdf-loading">
+            <div class="spinner"></div>
+            <p>Rendering your estimate...</p>
+        </div>
+        <div id="pdf-pages"></div>
+        <div id="pdf-error" class="pdf-error" style="display:none;">
+            <p>Unable to display the PDF inline.</p>
+            <a id="pdf-download-link" href="#" class="pdf-download-btn" target="_blank" rel="noopener">Download Estimate PDF</a>
+        </div>
+    </div>
+</div>
+<!-- /SECTION:PDF_VIEWER -->
+
+<!-- SECTION:ABOUT -->
+<div class="section-card">
+    <h2>About Florida Windows & Glass</h2>
+    <p>Florida Windows &amp; Glass Inc. (FWAG) is a licensed and insured impact window and door installer serving Miami-Dade, Broward, and Palm Beach counties. We specialize in protecting Florida homes with code-compliant impact-resistant products.</p>
+    <p>We handle everything from measurement to permitting to final inspection — so you get a single point of contact from estimate to completion.</p>
+</div>
+<!-- /SECTION:ABOUT -->
+
+<!-- SECTION:PROCESS -->
+<div class="section-card">
+    <h2>Our Process</h2>
+    <div class="process-steps">
+        <div class="process-step">
             <div class="step-number">1</div>
-            <div class="step-content">
-              <h3>Free In-Home Consultation</h3>
-              <p>We measure every opening and discuss your needs, preferences, and budget.</p>
-            </div>
-          </div>
-          <div class="process-step">
+            <h3>Free In-Home Consultation</h3>
+            <p>We measure every opening and discuss your needs, preferences, and budget.</p>
+        </div>
+        <div class="process-step">
             <div class="step-number">2</div>
-            <div class="step-content">
-              <h3>Custom Estimate</h3>
-              <p>You receive a detailed estimate with product specs, pricing, and installation scope. That's what you're looking at right now.</p>
-            </div>
-          </div>
-          <div class="process-step">
+            <h3>Custom Estimate</h3>
+            <p>You receive a detailed estimate with product specs, pricing, and installation scope. That's what you're looking at right now.</p>
+        </div>
+        <div class="process-step">
             <div class="step-number">3</div>
-            <div class="step-content">
-              <h3>Permitting &amp; Engineering</h3>
-              <p>We pull all required permits and coordinate engineering drawings — you don't have to deal with the city.</p>
-            </div>
-          </div>
-          <div class="process-step">
+            <h3>Permitting &amp; Engineering</h3>
+            <p>We pull all required permits and coordinate engineering drawings — you don't have to deal with the city.</p>
+        </div>
+        <div class="process-step">
             <div class="step-number">4</div>
-            <div class="step-content">
-              <h3>Manufacturing</h3>
-              <p>Your products are custom-built to your home's exact measurements. Typical lead time is 10-14 weeks.</p>
-            </div>
-          </div>
-          <div class="process-step">
+            <h3>Manufacturing</h3>
+            <p>Your products are custom-built to your home's exact measurements. Typical lead time is 10-14 weeks.</p>
+        </div>
+        <div class="process-step">
             <div class="step-number">5</div>
-            <div class="step-content">
-              <h3>Professional Installation</h3>
-              <p>Our crew installs everything, hauls away old windows/doors, and cleans up.</p>
-            </div>
-          </div>
-          <div class="process-step">
+            <h3>Professional Installation</h3>
+            <p>Our crew installs everything, hauls away old windows/doors, and cleans up.</p>
+        </div>
+        <div class="process-step">
             <div class="step-number">6</div>
-            <div class="step-content">
-              <h3>Final Inspection</h3>
-              <p>We schedule the county inspection and ensure everything passes code.</p>
-            </div>
-          </div>
+            <h3>Final Inspection</h3>
+            <p>We schedule the county inspection and ensure everything passes code.</p>
         </div>
-      </div>
-
-      <div class="section-card">
-        <h2>Why Choose FWAG?</h2>
-        <div class="benefits-grid">
-          <div class="benefit-item">
-            <div class="benefit-icon">&#127968;</div>
-            <div class="benefit-text"><strong>Full-Service</strong>Measure, permit, install, inspect — we handle it all.</div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">&#128170;</div>
-            <div class="benefit-text"><strong>Impact-Rated</strong>All products meet Florida Building Code HVHZ standards.</div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">&#128176;</div>
-            <div class="benefit-text"><strong>Insurance Savings</strong>Impact windows can lower your homeowner's insurance premiums.</div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">&#128274;</div>
-            <div class="benefit-text"><strong>Licensed &amp; Insured</strong>State-licensed contractor with full liability coverage.</div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">&#128736;</div>
-            <div class="benefit-text"><strong>5-Year Warranty</strong>Workmanship warranty from final inspection date.</div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">&#127775;</div>
-            <div class="benefit-text"><strong>100+ Reviews</strong>5-star rated on Google by real Florida homeowners.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-card">
-        <h2>What Our Customers Say</h2>
-        <div class="review-card">
-          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="review-text">"FWAG was professional from start to finish. They handled the permits, installed everything in one day, and the windows look amazing. Highly recommend!"</div>
-          <div class="review-author">— Maria G., Miami</div>
-        </div>
-        <div class="review-card">
-          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="review-text">"We got quotes from 5 companies. FWAG gave us the best price AND the best service. Our insurance dropped $1,200/year after the install."</div>
-          <div class="review-author">— Carlos R., Hialeah</div>
-        </div>
-        <div class="review-card">
-          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="review-text">"Juvian and the team made the whole process easy. No surprises, no hidden fees. The crew was respectful and cleaned up everything."</div>
-          <div class="review-author">— Sandra T., Pembroke Pines</div>
-        </div>
-      </div>
-
-      <div class="section-card">
-        <h2>Licenses &amp; Credentials</h2>
-        <p>FWAG is a fully licensed and insured Florida contractor, registered with the state and approved for work across South Florida's High Velocity Hurricane Zones.</p>
-        <div class="license-badges">
-          <div class="license-badge">FL State License #CGC1527582</div>
-          <div class="license-badge">Miami-Dade Approved</div>
-          <div class="license-badge">Broward Approved</div>
-          <div class="license-badge">Palm Beach Approved</div>
-          <div class="license-badge">Fully Insured</div>
-        </div>
-      </div>
-
-      <div id="consent-card" class="section-card consent-section">
-        <h2>Ready to Move Forward?</h2>
-        <p>Click the button below to review and sign your estimate through our secure portal. Your estimate details, terms &amp; conditions, and signature will be handled on the next page.</p>
-
-        <label class="consent-checkbox-wrapper" for="sms-consent">
-          <input type="checkbox" id="sms-consent">
-          <span class="consent-label">
-            <strong style="color: var(--fwag-dark-gray); display: block; margin-bottom: 4px;">Optional: SMS Updates</strong>
-            By checking this box, you consent to receive occasional promotional text messages from Florida Windows &amp; Glass, Inc. at the phone number provided. Message frequency varies. Message and data rates may apply. Reply STOP to opt out at any time. Reply HELP for assistance.
-          </span>
-        </label>
-
-        <button id="accept-btn" class="accept-btn" onclick="handleAccept()">
-          Accept &amp; Continue to Sign &#8594;
-        </button>
-        <p class="accept-subtitle">You'll be taken to our secure signing page to review terms and sign.</p>
-      </div>
-
-      <div id="accepted-banner" class="accepted-banner">
-        <h2>&#9989; Estimate Accepted</h2>
-        <p>You accepted this estimate on <span id="accepted-date"></span>. Thank you!</p>
-      </div>
-
     </div>
+</div>
+<!-- /SECTION:PROCESS -->
 
-    <div class="footer">
-      <p>&copy; 2026 Florida Windows &amp; Glass, Inc. | <a href="tel:3052600011">(305) 260-0011</a> | <a href="https://fwaginc.com" target="_blank">fwaginc.com</a></p>
+<!-- SECTION:BENEFITS -->
+<div class="section-card">
+    <h2>Why Choose FWAG?</h2>
+    <div class="benefits-grid">
+        <div class="benefit-item">
+            <div class="benefit-icon">🏠</div>
+            <strong>Full-Service</strong>
+            <p>Measure, permit, install, inspect — we handle it all.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">💪</div>
+            <strong>Impact-Rated</strong>
+            <p>All products meet Florida Building Code HVHZ standards.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">💰</div>
+            <strong>Insurance Savings</strong>
+            <p>Impact windows can lower your homeowner's insurance premiums.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">🔒</div>
+            <strong>Licensed &amp; Insured</strong>
+            <p>State-licensed contractor with full liability coverage.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">🛠</div>
+            <strong>5-Year Warranty</strong>
+            <p>Workmanship warranty from final inspection date.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">🌟</div>
+            <strong>100+ Reviews</strong>
+            <p>5-star rated on Google by real Florida homeowners.</p>
+        </div>
     </div>
-  </div>
+</div>
+<!-- /SECTION:BENEFITS -->
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+<!-- SECTION:REVIEWS -->
+<div class="section-card">
+    <h2>What Our Customers Say</h2>
+    <div class="reviews-grid">
+        <div class="review-card">
+            <div class="stars">★★★★★</div>
+            <p>"FWAG was professional from start to finish. They handled the permits, installed everything in one day, and the windows look amazing. Highly recommend!"</p>
+        </div>
+        <div class="review-card">
+            <div class="stars">★★★★★</div>
+            <p>"We got quotes from 5 companies. FWAG gave us the best price AND the best service. Our insurance dropped $1,200/year after the install."</p>
+            <p class="reviewer">— Carlos R., Hialeah</p>
+        </div>
+        <div class="review-card">
+            <div class="stars">★★★★★</div>
+            <p>"Juvian and the team made the whole process easy. No surprises, no hidden fees. The crew was respectful and cleaned up everything."</p>
+            <p class="reviewer">— Sandra T., Pembroke Pines</p>
+        </div>
+    </div>
+</div>
+<!-- /SECTION:REVIEWS -->
 
-    let proposalData = null;
+<!-- SECTION:LICENSES -->
+<div class="section-card">
+    <h2>Licenses &amp; Credentials</h2>
+    <p>FWAG is a fully licensed and insured Florida contractor, registered with the state and approved for work across South Florida's High Velocity Hurricane Zones.</p>
+    <div class="license-badges">
+        <span class="license-badge">FL State License #CGC1511987</span>
+        <span class="license-badge">Miami-Dade Approved</span>
+        <span class="license-badge">Broward Approved</span>
+        <span class="license-badge">Palm Beach Approved</span>
+        <span class="license-badge">Fully Insured</span>
+    </div>
+</div>
+<!-- /SECTION:LICENSES -->
 
-    function getSlug() {
-      const path = window.location.pathname;
-      const match = path.match(/\/est\/(.+)/);
-      return match ? match[1] : null;
-    }
+<!-- SECTION:ACCEPT -->
+<div class="section-card accept-section">
+    <h2>Ready to Move Forward?</h2>
+    <p>Click the button below to review and sign your estimate through our secure portal. Your estimate details, terms &amp; conditions, and signature will be handled on the next page.</p>
+    <button id="accept-btn" class="accept-btn" onclick="handleAccept()">Accept &amp; Continue to Sign →</button>
+    <p class="accept-note">You'll be taken to our secure signing page to review terms and sign.</p>
+</div>
+<!-- /SECTION:ACCEPT -->
 
-    function formatCurrency(amount) {
-      return parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+<!-- SECTION:FOOTER -->
+<footer class="footer">
+    <p>&copy; 2026 Florida Windows &amp; Glass, Inc. | <a href="tel:3052600011">(305) 260-0011</a> | <a href="https://www.fwaginc.com" target="_blank" rel="noopener">fwaginc.com</a></p>
+</footer>
+<!-- /SECTION:FOOTER -->
 
-    async function loadProposal() {
-      const slug = getSlug();
-      if (!slug) {
-        showError('Invalid link. No estimate ID found in the URL.');
-        return;
-      }
+<!-- Close proposal-content wrapper -->
+</div>
 
-      try {
-        const res = await fetch('/api/proposal/' + slug);
-        const data = await res.json();
-
-        if (res.status === 404) {
-          showError("We couldn't find this estimate. The link may be expired or incorrect.");
-          return;
-        }
-
-        if (res.status === 202) {
-          document.querySelector('#loading p').textContent = 'Your estimate is being prepared. This usually takes a few seconds...';
-          setTimeout(loadProposal, 3000);
-          return;
-        }
-
-        if (!res.ok) {
-          showError('Something went wrong loading your estimate. Please try again or call us.');
-          return;
-        }
-
-        proposalData = data;
-        renderProposal(data);
-
-      } catch (err) {
-        console.error('Load error:', err);
-        showError('Unable to connect. Please check your internet connection and try again.');
-      }
-    }
-
-    function showError(message) {
-      document.getElementById('loading').style.display = 'none';
-      var errorEl = document.getElementById('error');
-      errorEl.style.display = 'flex';
-      document.getElementById('error-message').innerHTML = message + '<br><br>Contact FWAG at <a href="tel:3052600011" style="color: var(--fwag-blue);">(305) 260-0011</a>.';
-    }
-
-    function renderProposal(data) {
-      document.getElementById('hero-name').textContent = data.customer_name.split(' ')[0];
-      document.getElementById('hero-estimate-number').textContent = data.estimate_number;
-      document.getElementById('hero-total').textContent = formatCurrency(data.estimate_total);
-
-      document.getElementById('pdf-download').href = data.pdf_url;
-
-      if (data.signed) {
-        document.getElementById('consent-card').style.display = 'none';
-        document.getElementById('accepted-banner').style.display = 'block';
-        document.getElementById('accepted-date').textContent = new Date(data.signed_at).toLocaleDateString('en-US', {
-          year: 'numeric', month: 'long', day: 'numeric'
-        });
-      }
-
-      if (!data.estimate_url) {
-        var btn = document.getElementById('accept-btn');
-        btn.disabled = true;
-        btn.textContent = 'Signing link unavailable \u2014 call us';
-      }
-
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('proposal').style.display = 'block';
-
-      renderPdf(data.pdf_url);
-    }
-
-    async function renderPdf(url) {
-      var container = document.getElementById('pdf-container');
-      var loadingEl = document.getElementById('pdf-loading');
-
-      try {
-        var pdf = await pdfjsLib.getDocument(url).promise;
-        loadingEl.remove();
-
-        for (var i = 1; i <= pdf.numPages; i++) {
-          var page = await pdf.getPage(i);
-
-          var containerWidth = container.clientWidth - 16;
-          var unscaledViewport = page.getViewport({ scale: 1 });
-          var scale = containerWidth / unscaledViewport.width;
-          var viewport = page.getViewport({ scale: Math.min(scale, 2) });
-
-          var canvas = document.createElement('canvas');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          canvas.style.width = '100%';
-          canvas.style.height = 'auto';
-
-          container.appendChild(canvas);
-
-          var ctx = canvas.getContext('2d');
-          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-        }
-      } catch (err) {
-        console.error('PDF render error:', err);
-        loadingEl.innerHTML = '<div class="pdf-error">Unable to load PDF preview.<br>Use the Download button below to view your estimate.</div>';
-      }
-    }
-
-    async function handleAccept() {
-      var btn = document.getElementById('accept-btn');
-      var smsConsent = document.getElementById('sms-consent').checked;
-
-      if (!proposalData || !proposalData.estimate_url) {
-        alert('Unable to proceed \u2014 signing link not available. Please call FWAG at (305) 260-0011.');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-
-      try {
-        var slug = getSlug();
-        var res = await fetch('/api/proposal/' + slug + '/accept', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sms_consent: smsConsent })
-        });
-
-        var data = await res.json();
-
-        if (res.ok && data.estimate_url) {
-          window.location.href = data.estimate_url;
-        } else {
-          window.location.href = proposalData.estimate_url;
-        }
-      } catch (err) {
-        console.error('Accept error:', err);
-        window.location.href = proposalData.estimate_url;
-      }
-    }
-
-    loadProposal();
-  </script>
+<script src="/app.js"></script>
 </body>
 </html>
