@@ -7,6 +7,11 @@
 
 # API routes -> Netlify Functions
 [[redirects]]
+  from = "/api/webhook"
+  to = "/.netlify/functions/webhook"
+  status = 200
+
+[[redirects]]
   from = "/api/proposal/:slug"
   to = "/.netlify/functions/proposal"
   status = 200
