@@ -136,20 +136,17 @@ async function renderPdf(url) {
 /* === /SECTION:RENDER_PDF === */
 
 /* === SECTION:CONSENT_MODAL === */
-function showConsentModal(data) {
+function showConsentModal() {
   const modal = document.getElementById('consent-modal');
-  const overlay = document.getElementById('consent-overlay');
-  const checkbox = document.getElementById('sms-consent-checkbox');
-  const viewBtn = document.getElementById('view-estimate-btn');
+  const checkbox = document.getElementById('modal-sms-checkbox');
+  const viewBtn = document.getElementById('modal-view-btn');
 
-  modal.style.display = 'block';
-  if (overlay) overlay.style.display = 'block';
+  modal.style.display = 'flex';
 
   viewBtn.addEventListener('click', async () => {
     const smsConsent = checkbox ? checkbox.checked : false;
 
     // Only POST if they actually checked the SMS consent box
-    // If they didn't check it, just close the modal — no API call needed
     if (smsConsent) {
       try {
         const slug = getSlug();
@@ -168,11 +165,10 @@ function showConsentModal(data) {
 
     // Close modal and reveal proposal
     modal.style.display = 'none';
-    if (overlay) overlay.style.display = 'none';
     document.getElementById('proposal-content').style.display = 'block';
   });
 }
-/* === SECTION:CONSENT_MODAL === */
+/* === /SECTION:CONSENT_MODAL === */
 
 /* === SECTION:HANDLE_ACCEPT === */
 async function handleAccept() {
