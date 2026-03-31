@@ -136,76 +136,70 @@ async function renderPdf(url) {
 /* === /SECTION:RENDER_PDF === */
 
 /* === SECTION:CONSENT_MODAL === */
-function showConsentModal() {
-    const modal = document.getElementById('consent-modal');
-    const checkbox = document.getElementById('modal-sms-checkbox');
-    const viewBtn = document.getElementById('modal-view-btn');
+function showConsentModal(data) {
+  const modal = document.getElementById('consent-modal');
+  const overlay = document.getElementById('consent-overlay');
+  const checkbox = document.getElementById('sms-consent-checkbox');
+  const viewBtn = document.getElementById('view-estimate-btn');
 
-    modal.style.display = 'flex';
+  modal.style.display = 'block';
+  if (overlay) overlay.style.display = 'block';
 
-    // Handle "View My Estimate" click
-    viewBtn.addEventListener('click', async function() {
+  viewBtn.addEventListener('click', async () => {
+    const smsConsent = checkbox ? checkbox.checked : false;
 
-        viewBtn.disabled = true;
-        viewBtn.textContent = 'Loading...';
+    // Only POST if they actually checked the SMS consent box
+    // If they didn't check it, just close the modal — no API call needed
+    if (smsConsent) {
+      try {
+        const slug = getSlug();
+        await fetch(`/api/proposal/${slug}/accept`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sms_consent: true,
+            consent_only: true
+          })
+        });
+      } catch (e) {
+        console.log('Consent save failed (non-blocking):', e.message);
+      }
+    }
 
-        try {
-            const slug = getSlug();
-
-            // Save SMS consent to backend
-            const response = await fetch('/api/proposal/' + slug + '/accept', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sms_consent: true, consent_only: true })
-            });
-
-            // Whether the save succeeds or not, show the estimate
-            // The consent is also captured at accept time as a fallback
-        } catch (err) {
-            console.error('Consent save error:', err);
-            // Non-blocking — still show the estimate
-        }
-
-        // Close modal and reveal proposal
-        modal.style.display = 'none';
-        document.getElementById('proposal-content').style.display = 'block';
-    });
+    // Close modal and reveal proposal
+    modal.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    document.getElementById('proposal-content').style.display = 'block';
+  });
 }
-/* === /SECTION:CONSENT_MODAL === */
+/* === SECTION:CONSENT_MODAL === */
 
 /* === SECTION:HANDLE_ACCEPT === */
 async function handleAccept() {
-    const btn = document.getElementById('accept-btn');
-    btn.disabled = true;
-    btn.textContent = 'Processing...';
+  const slug = getSlug();
+  
+  try {
+    const response = await fetch(`/api/proposal/${slug}/accept`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sms_consent: false,
+        consent_only: false
+      })
+    });
 
-    try {
-        const slug = getSlug();
+    const result = await response.json();
 
-        const response = await fetch('/api/proposal/' + slug + '/accept', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sms_consent: false })
-        });
-
-        const result = await response.json();
-
-        if (result.estimate_url) {
-            window.location.href = result.estimate_url;
-        } else {
-            btn.textContent = 'Signing link unavailable — call (888) 392-4462';
-            btn.disabled = false;
-        }
-    } catch (err) {
-        console.error('Accept error:', err);
-        btn.textContent = 'Error — please try again';
-        btn.disabled = false;
-        setTimeout(() => {
-            btn.textContent = 'Accept & Continue to Sign →';
-        }, 3000);
+    if (result.estimate_url) {
+      window.location.href = result.estimate_url;
+    } else {
+      alert('Signing link unavailable. Please call us at (888) 392-4462.');
     }
+  } catch (e) {
+    alert('Something went wrong. Please call us at (888) 392-4462.');
+  }
 }
-/* === /SECTION:HANDLE_ACCEPT === */
+/* === SECTION:HANDLE_ACCEPT === */
 
 /* === SECTION:INIT === */
 loadProposal();
