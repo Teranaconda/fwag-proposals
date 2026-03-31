@@ -61,11 +61,10 @@ exports.handler = async (event) => {
         estimate_version: proposal.version
       });
 
-      // Add "SMS Opted-In" tag to GHL contact via API
+      // Add "SMS Opted-In" tag + note to GHL contact via API
       try {
         const phone = proposal.customer_phone;
         if (phone) {
-          // Search for contact by phone
           const searchRes = await fetch(
             "https://services.leadconnectorhq.com/contacts/search",
             {
@@ -102,12 +101,31 @@ exports.handler = async (event) => {
               }
             );
             console.log("GHL tag SMS Opted-In added to contact:", contactId);
+
+            // Add consent note
+            const proposalUrl = `${process.env.SITE_URL}/est/${proposal.slug}`;
+            const timestamp = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
+            const noteBody = `SMS CONSENT GIVEN\nDate: ${timestamp} EST\nEstimate: ${proposal.estimate_number}\nProposal Link: ${proposalUrl}\nIP Address: ${ip}\nConsent Text: I consent to receive text message updates about my project from Florida Windows & Glass, Inc. at the phone number provided. Message frequency varies. Message and data rates may apply. Reply STOP to opt out at any time.`;
+
+            await fetch(
+              `https://services.leadconnectorhq.com/contacts/${contactId}/notes`,
+              {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${process.env.GHL_PRIVATE_TOKEN}`,
+                  "Version": "2021-07-28",
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ body: noteBody })
+              }
+            );
+            console.log("GHL consent note added to contact:", contactId);
           } else {
-            console.log("GHL contact not found by phone, skipping tag");
+            console.log("GHL contact not found by phone, skipping tag and note");
           }
         }
       } catch (e) {
-        console.log("GHL tagging failed (non-blocking):", e.message);
+        console.log("GHL tagging/note failed (non-blocking):", e.message);
       }
     }
 
