@@ -69,23 +69,44 @@ exports.handler = async (event) => {
         estimate_version: proposal.version
       });
 
-      // Fire GHL webhook for SMS opt-in tagging (NOT the full proposal-sent flow)
+      // Add "SMS Opted-In" tag to GHL contact via API
       try {
-        await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            event: "sms_opt_in",
-            customer_name: proposal.customer_first_name && proposal.customer_last_name
-              ? `${proposal.customer_first_name} ${proposal.customer_last_name}`
-              : proposal.customer_name,
-            customer_email: proposal.customer_email,
-            customer_phone: proposal.customer_phone,
-            estimate_number: proposal.estimate_number
-          })
-        });
+        const phone = proposal.customer_phone;
+        if (phone) {
+          const lookupRes = await fetch(
+            `https://services.leadconnectorhq.com/contacts/lookup?phone=${encodeURIComponent(phone)}&locationId=${process.env.GHL_LOCATION_ID}`,
+            {
+              headers: {
+                "Authorization": `Bearer ${process.env.GHL_PRIVATE_TOKEN}`,
+                "Version": "2021-07-28"
+              }
+            }
+          );
+          const lookupData = await lookupRes.json();
+          const contactId = lookupData.contacts && lookupData.contacts.length > 0
+            ? lookupData.contacts[0].id
+            : null;
+
+          if (contactId) {
+            await fetch(
+              `https://services.leadconnectorhq.com/contacts/${contactId}/tags`,
+              {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${process.env.GHL_PRIVATE_TOKEN}`,
+                  "Version": "2021-07-28",
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ tags: ["SMS Opted-In"] })
+              }
+            );
+            console.log("GHL tag 'SMS Opted-In' added to contact:", contactId);
+          } else {
+            console.log("GHL contact not found by phone, skipping tag");
+          }
+        }
       } catch (e) {
-        console.log("GHL sms_opt_in webhook failed (non-blocking):", e.message);
+        console.log("GHL tagging failed (non-blocking):", e.message);
       }
     }
 

@@ -76,8 +76,12 @@ function renderProposal(data) {
         document.getElementById('pdf-download-link').href = data.pdf_url;
     }
 
-    // Show consent modal (proposal content stays hidden until consent is given)
-    showConsentModal();
+    // Skip consent modal if already consented (this or any prior estimate) — go straight to proposal
+    if (data.sms_consent) {
+        document.getElementById('proposal-content').style.display = 'block';
+    } else {
+        showConsentModal();
+    }
 
     // Start PDF rendering in background (will be visible once modal is dismissed)
     if (data.pdf_url) {

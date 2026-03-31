@@ -54,6 +54,21 @@ exports.handler = async (event) => {
       displayName = `${titleCase(data.customer_first_name)} ${titleCase(data.customer_last_name)}`;
     }
 
+    // Check if this customer has consented on ANY previous proposal (by phone)
+    let customerConsented = data.sms_consent;
+    if (!customerConsented && data.customer_phone) {
+      const { data: priorConsent } = await supabase
+        .from('proposals')
+        .select('id')
+        .eq('customer_phone', data.customer_phone)
+        .eq('sms_consent', true)
+        .limit(1)
+        .maybeSingle();
+      if (priorConsent) {
+        customerConsented = true;
+      }
+    }
+
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -67,7 +82,7 @@ exports.handler = async (event) => {
         pdf_url: data.pdf_url,
         estimate_url: data.estimate_url,
         version: data.version,
-        sms_consent: data.sms_consent,
+        sms_consent: customerConsented,
         signed: data.signed,
         signed_at: data.signed_at,
         signed_version: data.signed_version,
