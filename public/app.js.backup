@@ -63,17 +63,8 @@ function showError(title, message) {
 function renderProposal(data) {
     document.getElementById('loading-screen').style.display = 'none';
 
-    // Hero elements
     document.getElementById('customer-name').textContent = data.customer_name || '';
     document.getElementById('estimate-number').textContent = data.estimate_number || '';
-
-    // Cover page elements
-    const coverName = document.getElementById('cover-customer-name');
-    const coverEst = document.getElementById('cover-estimate-number');
-    if (coverName) coverName.textContent = data.customer_name || '';
-    if (coverEst) coverEst.textContent = data.estimate_number || '';
-
-    // Hidden total badge (kept for compatibility, not displayed)
     document.getElementById('estimate-total-badge').textContent = formatCurrency(data.estimate_total);
 
     if (data.pdf_url) {

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- SECTION:HEAD -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Estimate â€” Florida Windows & Glass</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<!-- /SECTION:HEAD -->
+<body>
+
+<!-- SECTION:LOADING_AND_ERROR -->
+<div id="loading-screen" class="loading-screen">
+    <div class="spinner"></div>
+    <p>Loading your estimate...</p>
+</div>
+
+<div id="error-screen" class="error-screen" style="display:none;">
+    <h2 id="error-title">Estimate Not Found</h2>
+    <p id="error-message">This estimate link may be invalid or expired. Please contact Florida Windows & Glass at (888) 392-4462.</p>
+</div>
+<!-- /SECTION:LOADING_AND_ERROR -->
+
+<!-- SECTION:CONSENT_MODAL -->
+<div id="consent-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <img src="https://images.leadconnectorhq.com/image/f_webp/q_95/r_1200/u_https://assets.cdn.filesafe.space/cLMRos8MRn2mKiY6pCBP/media/6682b3b5f5e8be78f5fa66f3.png" alt="FWAG Logo" class="modal-logo">
+        <h2>Welcome!</h2>
+        <p>Before viewing your estimate, please consent to receive text message updates about your project from Florida Windows & Glass, Inc.</p>
+        <div class="modal-consent-row">
+            <label class="checkbox-label">
+                <input type="checkbox" id="modal-sms-checkbox" checked>
+                <span>I consent to receive text message updates about my project from Florida Windows & Glass, Inc. at the phone number provided. Message frequency varies. Message and data rates may apply. Reply STOP to opt out at any time.</span>
+            </label>
+        </div>
+        <button id="modal-view-btn" class="modal-btn">View My Estimate</button>
+        <p class="modal-fine-print">You can also call us at <a href="tel:8883924462">(888) 392-4462</a> with any questions.</p>
+    </div>
+</div>
+<!-- /SECTION:CONSENT_MODAL -->
+
+<!-- SECTION:PROPOSAL_CONTENT -->
+<div id="proposal-content" style="display:none;">
+<!-- /SECTION:PROPOSAL_CONTENT -->
+
+<!-- SECTION:HERO -->
+<div class="hero">
+    <img src="https://images.leadconnectorhq.com/image/f_webp/q_95/r_1200/u_https://assets.cdn.filesafe.space/cLMRos8MRn2mKiY6pCBP/media/6682b3b5f5e8be78f5fa66f3.png" alt="FWAG Logo" class="hero-logo">
+    <h1>Hi <span id="customer-name"></span>, your estimate is ready!</h1>
+    <p class="estimate-badge">Estimate <span id="estimate-number"></span></p>
+    <p class="estimate-total-badge" id="estimate-total-badge">$0.00</p>
+</div>
+<!-- /SECTION:HERO -->
+
+<!-- SECTION:PDF_VIEWER -->
+<div class="section-card">
+    <div class="pdf-container" id="pdf-container">
+        <div id="pdf-loading" class="pdf-loading">
+            <div class="spinner"></div>
+            <p>Rendering your estimate...</p>
+        </div>
+        <div id="pdf-pages"></div>
+        <div id="pdf-error" class="pdf-error" style="display:none;">
+            <p>Unable to display the PDF inline.</p>
+            <a id="pdf-download-link" href="#" class="pdf-download-btn" target="_blank" rel="noopener">Download Estimate PDF</a>
+        </div>
+    </div>
+</div>
+<!-- /SECTION:PDF_VIEWER -->
+
+<!-- SECTION:ABOUT -->
+<div class="section-card">
+    <h2>About Florida Windows & Glass</h2>
+    <p>Florida Windows &amp; Glass Inc. (FWAG) is a licensed and insured impact window and door installer serving Miami-Dade, Broward, and Palm Beach counties. We specialize in protecting Florida homes with code-compliant impact-resistant products.</p>
+    <p>We handle everything from measurement to permitting to final inspection â€” so you get a single point of contact from estimate to completion.</p>
+</div>
+<!-- /SECTION:ABOUT -->
+
+<!-- SECTION:PROCESS -->
+<div class="section-card">
+    <h2>Our Process</h2>
+    <div class="process-steps">
+        <div class="process-step">
+            <div class="step-number">1</div>
+            <h3>Free In-Home Consultation</h3>
+            <p>We measure every opening and discuss your needs, preferences, and budget.</p>
+        </div>
+        <div class="process-step">
+            <div class="step-number">2</div>
+            <h3>Custom Estimate</h3>
+            <p>You receive a detailed estimate with product specs, pricing, and installation scope. That's what you're looking at right now.</p>
+        </div>
+        <div class="process-step">
+            <div class="step-number">3</div>
+            <h3>Permitting &amp; Engineering</h3>
+            <p>We pull all required permits and coordinate engineering drawings â€” you don't have to deal with the city.</p>
+        </div>
+        <div class="process-step">
+            <div class="step-number">4</div>
+            <h3>Manufacturing</h3>
+            <p>Your products are custom-built to your home's exact measurements. Typical lead time is 10-14 weeks.</p>
+        </div>
+        <div class="process-step">
+            <div class="step-number">5</div>
+            <h3>Professional Installation</h3>
+            <p>Our crew installs everything, hauls away old windows/doors, and cleans up.</p>
+        </div>
+        <div class="process-step">
+            <div class="step-number">6</div>
+            <h3>Final Inspection</h3>
+            <p>We schedule the county inspection and ensure everything passes code.</p>
+        </div>
+    </div>
+</div>
+<!-- /SECTION:PROCESS -->
+
+<!-- SECTION:BENEFITS -->
+<div class="section-card">
+    <h2>Why Choose FWAG?</h2>
+    <div class="benefits-grid">
+        <div class="benefit-item">
+            <div class="benefit-icon">ðŸ </div>
+            <strong>Full-Service</strong>
+            <p>Measure, permit, install, inspect â€” we handle it all.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">ðŸ’ª</div>
+            <strong>Impact-Rated</strong>
+            <p>All products meet Florida Building Code HVHZ standards.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">ðŸ’°</div>
+            <strong>Insurance Savings</strong>
+            <p>Impact windows can lower your homeowner's insurance premiums.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">ðŸ”’</div>
+            <strong>Licensed &amp; Insured</strong>
+            <p>State-licensed contractor with full liability coverage.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">ðŸ› </div>
+            <strong>5-Year Warranty</strong>
+            <p>Workmanship warranty from final inspection date.</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">ðŸŒŸ</div>
+            <strong>100+ Reviews</strong>
+            <p>5-star rated on Google by real Florida homeowners.</p>
+        </div>
+    </div>
+</div>
+<!-- /SECTION:BENEFITS -->
+
+<!-- SECTION:REVIEWS -->
+<div class="section-card">
+    <h2>What Our Customers Say</h2>
+    <div class="reviews-grid">
+        <div class="review-card">
+            <div class="stars">â˜…â˜…â˜…â˜…â˜…</div>
+            <p>"FWAG was professional from start to finish. They handled the permits, installed everything in one day, and the windows look amazing. Highly recommend!"</p>
+        </div>
+        <div class="review-card">
+            <div class="stars">â˜…â˜…â˜…â˜…â˜…</div>
+            <p>"We got quotes from 5 companies. FWAG gave us the best price AND the best service. Our insurance dropped $1,200/year after the install."</p>
+            <p class="reviewer">â€” Carlos R., Hialeah</p>
+        </div>
+        <div class="review-card">
+            <div class="stars">â˜…â˜…â˜…â˜…â˜…</div>
+            <p>"Juvian and the team made the whole process easy. No surprises, no hidden fees. The crew was respectful and cleaned up everything."</p>
+            <p class="reviewer">â€” Sandra T., Pembroke Pines</p>
+        </div>
+    </div>
+</div>
+<!-- /SECTION:REVIEWS -->
+
+<!-- SECTION:LICENSES -->
+<div class="section-card">
+    <h2>Licenses &amp; Credentials</h2>
+    <p>FWAG is a fully licensed and insured Florida contractor, registered with the state and approved for work across South Florida's High Velocity Hurricane Zones.</p>
+    <div class="license-badges">
+        <span class="license-badge">FL State License #CGC1511987</span>
+        <span class="license-badge">Miami-Dade Approved</span>
+        <span class="license-badge">Broward Approved</span>
+        <span class="license-badge">Palm Beach Approved</span>
+        <span class="license-badge">Fully Insured</span>
+    </div>
+</div>
+<!-- /SECTION:LICENSES -->
+
+<!-- SECTION:ACCEPT -->
+<div class="section-card accept-section">
+    <h2>Ready to Move Forward?</h2>
+    <p>Click the button below to review and sign your estimate through our secure portal. Your estimate details, terms &amp; conditions, and signature will be handled on the next page.</p>
+    <button id="accept-btn" class="accept-btn" onclick="handleAccept()">Accept &amp; Continue to Sign â†’</button>
+    <p class="accept-note">You'll be taken to our secure signing page to review terms and sign.</p>
+</div>
+<!-- /SECTION:ACCEPT -->
+
+<!-- SECTION:FOOTER -->
+<footer class="footer">
+    <p>&copy; 2026 Florida Windows &amp; Glass, Inc. | <a href="tel:8883924462">(888) 392-4462</a> | <a href="https://www.fwaginc.com" target="_blank" rel="noopener">fwaginc.com</a></p>
+</footer>
+<!-- /SECTION:FOOTER -->
+
+<!-- Close proposal-content wrapper -->
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

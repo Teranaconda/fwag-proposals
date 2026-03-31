@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Estimate â€” Florida Windows & Glass</title>
+    <title>Your Estimate — Florida Windows & Glass</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -19,24 +22,29 @@
 
 <div id="error-screen" class="error-screen" style="display:none;">
     <h2 id="error-title">Estimate Not Found</h2>
-    <p id="error-message">This estimate link may be invalid or expired. Please contact Florida Windows & Glass at (888) 392-4462.</p>
+    <p id="error-message">This estimate link may be invalid or expired. Please contact Florida Windows &amp; Glass at (888) 392-4462.</p>
 </div>
 <!-- /SECTION:LOADING_AND_ERROR -->
 
 <!-- SECTION:CONSENT_MODAL -->
-<div id="consent-modal" class="modal-overlay" style="display:none;">
-    <div class="modal-box">
-        <img src="https://images.leadconnectorhq.com/image/f_webp/q_95/r_1200/u_https://assets.cdn.filesafe.space/cLMRos8MRn2mKiY6pCBP/media/6682b3b5f5e8be78f5fa66f3.png" alt="FWAG Logo" class="modal-logo">
-        <h2>Welcome!</h2>
-        <p>Before viewing your estimate, please consent to receive text message updates about your project from Florida Windows & Glass, Inc.</p>
-        <div class="modal-consent-row">
-            <label class="checkbox-label">
+<div id="consent-modal" class="cover-page" style="display:none;">
+    <div class="cover-inner">
+        <div class="cover-logo-wrap">
+            <img src="https://assets.cdn.filesafe.space/ygg3IqHNNUpSXx9l4o0V/media/697b9c00d5b65e6e23af35b5.png" alt="Florida Windows &amp; Glass" class="cover-logo">
+        </div>
+        <div class="cover-text">
+            <p class="cover-label">Estimate prepared for</p>
+            <h1 class="cover-name" id="cover-customer-name"></h1>
+            <p class="cover-estimate-id" id="cover-estimate-number"></p>
+        </div>
+        <div class="cover-consent">
+            <label class="cover-checkbox-label">
                 <input type="checkbox" id="modal-sms-checkbox" checked>
-                <span>I consent to receive text message updates about my project from Florida Windows & Glass, Inc. at the phone number provided. Message frequency varies. Message and data rates may apply. Reply STOP to opt out at any time.</span>
+                <span>I consent to receive text message updates about my project from Florida Windows &amp; Glass, Inc. Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out.</span>
             </label>
         </div>
-        <button id="modal-view-btn" class="modal-btn">View My Estimate</button>
-        <p class="modal-fine-print">You can also call us at <a href="tel:8883924462">(888) 392-4462</a> with any questions.</p>
+        <button id="modal-view-btn" class="cover-btn">View My Estimate</button>
+        <p class="cover-fine-print">Questions? Call <a href="tel:8883924462">(888) 392-4462</a></p>
     </div>
 </div>
 <!-- /SECTION:CONSENT_MODAL -->
@@ -46,166 +54,277 @@
 <!-- /SECTION:PROPOSAL_CONTENT -->
 
 <!-- SECTION:HERO -->
-<div class="hero">
-    <img src="https://images.leadconnectorhq.com/image/f_webp/q_95/r_1200/u_https://assets.cdn.filesafe.space/cLMRos8MRn2mKiY6pCBP/media/6682b3b5f5e8be78f5fa66f3.png" alt="FWAG Logo" class="hero-logo">
-    <h1>Hi <span id="customer-name"></span>, your estimate is ready!</h1>
-    <p class="estimate-badge">Estimate <span id="estimate-number"></span></p>
-    <p class="estimate-total-badge" id="estimate-total-badge">$0.00</p>
-</div>
+<header class="hero">
+    <div class="hero-inner">
+        <img src="https://assets.cdn.filesafe.space/ygg3IqHNNUpSXx9l4o0V/media/697b9c00d5b65e6e23af35b5.png" alt="FWAG Logo" class="hero-logo">
+        <h1 class="hero-title"><span id="customer-name"></span>, your estimate is ready.</h1>
+        <p class="hero-subtitle">Estimate <span id="estimate-number"></span></p>
+    </div>
+</header>
+<div id="estimate-total-badge" style="display:none;"></div>
 <!-- /SECTION:HERO -->
 
 <!-- SECTION:PDF_VIEWER -->
-<div class="section-card">
-    <div class="pdf-container" id="pdf-container">
-        <div id="pdf-loading" class="pdf-loading">
-            <div class="spinner"></div>
-            <p>Rendering your estimate...</p>
-        </div>
-        <div id="pdf-pages"></div>
-        <div id="pdf-error" class="pdf-error" style="display:none;">
-            <p>Unable to display the PDF inline.</p>
-            <a id="pdf-download-link" href="#" class="pdf-download-btn" target="_blank" rel="noopener">Download Estimate PDF</a>
+<section class="content-section pdf-section">
+    <div class="section-inner">
+        <h2 class="section-heading">Your Detailed Estimate</h2>
+        <p class="section-subtext">Review every line item — products, specifications, and pricing — in the document below. Scroll to see all pages.</p>
+        <div class="pdf-container" id="pdf-container">
+            <div id="pdf-loading" class="pdf-loading">
+                <div class="spinner"></div>
+                <p>Rendering your estimate...</p>
+            </div>
+            <div id="pdf-pages"></div>
+            <div id="pdf-error" class="pdf-error" style="display:none;">
+                <p>Unable to display the PDF inline.</p>
+                <a id="pdf-download-link" href="#" class="btn-secondary" target="_blank" rel="noopener">Download Estimate PDF</a>
+            </div>
         </div>
     </div>
-</div>
+</section>
 <!-- /SECTION:PDF_VIEWER -->
 
-<!-- SECTION:ABOUT -->
-<div class="section-card">
-    <h2>About Florida Windows & Glass</h2>
-    <p>Florida Windows &amp; Glass Inc. (FWAG) is a licensed and insured impact window and door installer serving Miami-Dade, Broward, and Palm Beach counties. We specialize in protecting Florida homes with code-compliant impact-resistant products.</p>
-    <p>We handle everything from measurement to permitting to final inspection â€” so you get a single point of contact from estimate to completion.</p>
-</div>
-<!-- /SECTION:ABOUT -->
+<!-- SECTION:VALUE_PROPS -->
+<section class="content-section value-section">
+    <div class="section-inner">
+        <h2 class="section-heading">What This Investment Does for Your Home</h2>
+        <div class="value-grid">
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h3>Hurricane Protection</h3>
+                <p>Every product meets Florida's High Velocity Hurricane Zone code. Your home stays sealed — no plywood, no shutters, no last-minute panic.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <h3>Lower Insurance Premiums</h3>
+                <p>Homeowners regularly save $1,000–$3,000+ per year on insurance after a full-house installation. The windows pay for themselves over time.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <h3>Increased Property Value</h3>
+                <p>Impact windows are one of the highest-ROI home improvements in South Florida. Buyers expect them — and they pay more for homes that have them.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                </div>
+                <h3>Noise Reduction &amp; Comfort</h3>
+                <p>Impact glass dramatically cuts outside noise — traffic, construction, neighbors. Your home becomes noticeably quieter the day we install.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /SECTION:VALUE_PROPS -->
+
+<!-- SECTION:INCLUDED -->
+<section class="content-section included-section">
+    <div class="section-inner">
+        <h2 class="section-heading">What's Included — At No Extra Cost</h2>
+        <p class="section-subtext">Other contractors charge separately for these. We don't. Every FWAG project includes full-service handling so you never have to chase permits, schedule inspections, or coordinate with the city yourself.</p>
+        <div class="included-grid">
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>Permitting &amp; Engineering</strong>
+                    <p>We pull all city/county permits and coordinate engineering drawings. You don't touch paperwork.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>HOA Coordination</strong>
+                    <p>If your community requires HOA approval, we prepare and submit the application package for you.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>Professional Installation &amp; Cleanup</strong>
+                    <p>Our in-house crew installs everything, hauls away old windows and doors, and leaves your home clean.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>Final County Inspection</strong>
+                    <p>We schedule and attend the final building inspection to make sure everything passes code — you just need to be home.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>Dedicated Project Coordinator</strong>
+                    <p>One point of contact from estimate to completion. You'll always know who to call and what's happening next.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>Post-Install Support</strong>
+                    <p>Questions after we finish? Call us anytime. We don't disappear after the last screw goes in.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /SECTION:INCLUDED -->
 
 <!-- SECTION:PROCESS -->
-<div class="section-card">
-    <h2>Our Process</h2>
-    <div class="process-steps">
-        <div class="process-step">
-            <div class="step-number">1</div>
-            <h3>Free In-Home Consultation</h3>
-            <p>We measure every opening and discuss your needs, preferences, and budget.</p>
-        </div>
-        <div class="process-step">
-            <div class="step-number">2</div>
-            <h3>Custom Estimate</h3>
-            <p>You receive a detailed estimate with product specs, pricing, and installation scope. That's what you're looking at right now.</p>
-        </div>
-        <div class="process-step">
-            <div class="step-number">3</div>
-            <h3>Permitting &amp; Engineering</h3>
-            <p>We pull all required permits and coordinate engineering drawings â€” you don't have to deal with the city.</p>
-        </div>
-        <div class="process-step">
-            <div class="step-number">4</div>
-            <h3>Manufacturing</h3>
-            <p>Your products are custom-built to your home's exact measurements. Typical lead time is 10-14 weeks.</p>
-        </div>
-        <div class="process-step">
-            <div class="step-number">5</div>
-            <h3>Professional Installation</h3>
-            <p>Our crew installs everything, hauls away old windows/doors, and cleans up.</p>
-        </div>
-        <div class="process-step">
-            <div class="step-number">6</div>
-            <h3>Final Inspection</h3>
-            <p>We schedule the county inspection and ensure everything passes code.</p>
+<section class="content-section process-section">
+    <div class="section-inner">
+        <h2 class="section-heading">How It Works — 6 Simple Steps</h2>
+        <p class="section-subtext">You've already completed steps 1 and 2. Once you approve this estimate, we take it from here.</p>
+        <div class="process-timeline">
+            <div class="process-step completed">
+                <div class="step-marker">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="step-content">
+                    <h3>Free In-Home Consultation</h3>
+                    <p>We measured every opening and discussed your needs, preferences, and budget.</p>
+                </div>
+            </div>
+            <div class="process-step completed">
+                <div class="step-marker">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="step-content">
+                    <h3>Custom Estimate</h3>
+                    <p>That's what you're reviewing right now — detailed specs, pricing, and scope.</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-marker"><span>3</span></div>
+                <div class="step-content">
+                    <h3>Permitting &amp; Engineering</h3>
+                    <p>We handle all permits and engineering drawings with the city. You don't lift a finger.</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-marker"><span>4</span></div>
+                <div class="step-content">
+                    <h3>Manufacturing</h3>
+                    <p>Your products are custom-built to your home's exact measurements. Current lead time: 4–6 weeks.</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-marker"><span>5</span></div>
+                <div class="step-content">
+                    <h3>Professional Installation</h3>
+                    <p>Our in-house crew installs everything, removes old products, and cleans up.</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-marker"><span>6</span></div>
+                <div class="step-content">
+                    <h3>Final Inspection</h3>
+                    <p>We schedule the county inspection and make sure everything passes code. Project complete.</p>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</section>
 <!-- /SECTION:PROCESS -->
 
-<!-- SECTION:BENEFITS -->
-<div class="section-card">
-    <h2>Why Choose FWAG?</h2>
-    <div class="benefits-grid">
-        <div class="benefit-item">
-            <div class="benefit-icon">ðŸ </div>
-            <strong>Full-Service</strong>
-            <p>Measure, permit, install, inspect â€” we handle it all.</p>
+<!-- SECTION:GUARANTEE -->
+<section class="content-section guarantee-section">
+    <div class="section-inner guarantee-inner">
+        <div class="guarantee-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
         </div>
-        <div class="benefit-item">
-            <div class="benefit-icon">ðŸ’ª</div>
-            <strong>Impact-Rated</strong>
-            <p>All products meet Florida Building Code HVHZ standards.</p>
-        </div>
-        <div class="benefit-item">
-            <div class="benefit-icon">ðŸ’°</div>
-            <strong>Insurance Savings</strong>
-            <p>Impact windows can lower your homeowner's insurance premiums.</p>
-        </div>
-        <div class="benefit-item">
-            <div class="benefit-icon">ðŸ”’</div>
-            <strong>Licensed &amp; Insured</strong>
-            <p>State-licensed contractor with full liability coverage.</p>
-        </div>
-        <div class="benefit-item">
-            <div class="benefit-icon">ðŸ› </div>
-            <strong>5-Year Warranty</strong>
-            <p>Workmanship warranty from final inspection date.</p>
-        </div>
-        <div class="benefit-item">
-            <div class="benefit-icon">ðŸŒŸ</div>
-            <strong>100+ Reviews</strong>
-            <p>5-star rated on Google by real Florida homeowners.</p>
-        </div>
+        <h2 class="section-heading">5-Year Workmanship Warranty</h2>
+        <p>Every FWAG installation is backed by our 5-year workmanship warranty, starting from the date of your final county inspection. If anything related to our installation needs attention, we come back and fix it — no runaround, no fine print.</p>
+        <p class="guarantee-extra">This is in addition to the manufacturer's product warranty on your windows and doors.</p>
     </div>
-</div>
-<!-- /SECTION:BENEFITS -->
+</section>
+<!-- /SECTION:GUARANTEE -->
 
 <!-- SECTION:REVIEWS -->
-<div class="section-card">
-    <h2>What Our Customers Say</h2>
-    <div class="reviews-grid">
-        <div class="review-card">
-            <div class="stars">â˜…â˜…â˜…â˜…â˜…</div>
-            <p>"FWAG was professional from start to finish. They handled the permits, installed everything in one day, and the windows look amazing. Highly recommend!"</p>
-        </div>
-        <div class="review-card">
-            <div class="stars">â˜…â˜…â˜…â˜…â˜…</div>
-            <p>"We got quotes from 5 companies. FWAG gave us the best price AND the best service. Our insurance dropped $1,200/year after the install."</p>
-            <p class="reviewer">â€” Carlos R., Hialeah</p>
-        </div>
-        <div class="review-card">
-            <div class="stars">â˜…â˜…â˜…â˜…â˜…</div>
-            <p>"Juvian and the team made the whole process easy. No surprises, no hidden fees. The crew was respectful and cleaned up everything."</p>
-            <p class="reviewer">â€” Sandra T., Pembroke Pines</p>
+<section class="content-section reviews-section">
+    <div class="section-inner">
+        <h2 class="section-heading">What Our Customers Say</h2>
+        <p class="section-subtext">100+ five-star reviews from real South Florida homeowners.</p>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="review-text">"FWAG was professional from start to finish. They handled the permits, installed everything in one day, and the windows look amazing. Highly recommend!"</p>
+                <p class="reviewer">— Maria L., Miami</p>
+            </div>
+            <div class="review-card">
+                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="review-text">"We got quotes from 5 companies. FWAG gave us the best price AND the best service. Our insurance dropped $1,200/year after the install."</p>
+                <p class="reviewer">— Carlos R., Hialeah</p>
+            </div>
+            <div class="review-card">
+                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="review-text">"Juvian and the team made the whole process easy. No surprises, no hidden fees. The crew was respectful and cleaned up everything."</p>
+                <p class="reviewer">— Sandra T., Pembroke Pines</p>
+            </div>
         </div>
     </div>
-</div>
+</section>
 <!-- /SECTION:REVIEWS -->
 
-<!-- SECTION:LICENSES -->
-<div class="section-card">
-    <h2>Licenses &amp; Credentials</h2>
-    <p>FWAG is a fully licensed and insured Florida contractor, registered with the state and approved for work across South Florida's High Velocity Hurricane Zones.</p>
-    <div class="license-badges">
-        <span class="license-badge">FL State License #CGC1511987</span>
-        <span class="license-badge">Miami-Dade Approved</span>
-        <span class="license-badge">Broward Approved</span>
-        <span class="license-badge">Palm Beach Approved</span>
-        <span class="license-badge">Fully Insured</span>
+<!-- SECTION:TRUST_BAR -->
+<section class="trust-bar">
+    <div class="trust-inner">
+        <div class="trust-item">
+            <strong>FL License #CGC1511987</strong>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+            <strong>30+ Years Combined Experience</strong>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+            <strong>Miami-Dade &amp; Broward Counties</strong>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+            <strong>Fully Licensed &amp; Insured</strong>
+        </div>
     </div>
-</div>
-<!-- /SECTION:LICENSES -->
+</section>
+<!-- /SECTION:TRUST_BAR -->
 
 <!-- SECTION:ACCEPT -->
-<div class="section-card accept-section">
-    <h2>Ready to Move Forward?</h2>
-    <p>Click the button below to review and sign your estimate through our secure portal. Your estimate details, terms &amp; conditions, and signature will be handled on the next page.</p>
-    <button id="accept-btn" class="accept-btn" onclick="handleAccept()">Accept &amp; Continue to Sign â†’</button>
-    <p class="accept-note">You'll be taken to our secure signing page to review terms and sign.</p>
-</div>
+<section class="content-section accept-section">
+    <div class="section-inner accept-inner">
+        <h2>Ready to Protect Your Home?</h2>
+        <p>Click below to review the terms and sign your estimate. Once approved, we begin permitting immediately — your project is underway.</p>
+        <button id="accept-btn" class="accept-btn" onclick="handleAccept()">Accept &amp; Continue to Sign</button>
+        <p class="accept-reassurance">You'll be taken to our secure signing page. No payment is collected here.</p>
+    </div>
+</section>
 <!-- /SECTION:ACCEPT -->
 
 <!-- SECTION:FOOTER -->
 <footer class="footer">
-    <p>&copy; 2026 Florida Windows &amp; Glass, Inc. | <a href="tel:8883924462">(888) 392-4462</a> | <a href="https://www.fwaginc.com" target="_blank" rel="noopener">fwaginc.com</a></p>
+    <div class="footer-inner">
+        <p>&copy; 2026 Florida Windows &amp; Glass, Inc.</p>
+        <p><a href="tel:8883924462">(888) 392-4462</a> &nbsp;&middot;&nbsp; <a href="https://www.fwaginc.com" target="_blank" rel="noopener">fwaginc.com</a></p>
+    </div>
 </footer>
 <!-- /SECTION:FOOTER -->
 
-<!-- Close proposal-content wrapper -->
 </div>
 
 <script src="/app.js"></script>

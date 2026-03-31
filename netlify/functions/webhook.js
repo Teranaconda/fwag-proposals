@@ -221,6 +221,9 @@ exports.handler = async (event) => {
       filename: `${estimate_number}.pdf`,
       contentType: 'application/pdf'
     });
+    if (process.env.GHL_MEDIA_FOLDER_ID) {
+      form.append('parentId', process.env.GHL_MEDIA_FOLDER_ID);
+    }
 
     const ghlUploadRes = await fetch(
       'https://services.leadconnectorhq.com/medias/upload-file',
