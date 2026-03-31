@@ -36,6 +36,10 @@ exports.handler = async (event) => {
     estimate_total
   } = body;
 
+  // Mutable copies for phone/email — Deluge often sends these empty
+  let resolvedPhone = customer_phone || null;
+  let resolvedEmail = customer_email || null;
+
   if (!estimate_id || !estimate_number) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Missing estimate_id or estimate_number' }) };
   }
@@ -89,8 +93,8 @@ exports.handler = async (event) => {
       estimate_number,
       organization_id: process.env.ZOHO_ORG_ID,
       customer_name,
-      customer_email: customer_email || null,
-      customer_phone: customer_phone || null,
+      customer_email: resolvedEmail,
+      customer_phone: resolvedPhone,
       salesperson_name: salesperson_name || null,
       estimate_total: parseFloat(estimate_total) || 0,
       slug,
@@ -156,17 +160,40 @@ exports.handler = async (event) => {
 
     if (estimateDetailData.estimate) {
       estimateUrl = estimateDetailData.estimate.estimate_url || null;
-      // Trim trailing space if present (Zoho sometimes adds it)
       if (estimateUrl) estimateUrl = estimateUrl.trim();
 
-      // Get first/last name from contact_persons_details
+      // Get first/last name + phone/email from contact_persons_details
       const persons = estimateDetailData.estimate.contact_persons_details;
       if (persons && persons.length > 0) {
         customerFirstName = persons[0].first_name || null;
         customerLastName = persons[0].last_name || null;
+        // Fill phone/email from contact person if Deluge sent empty
+        if (!resolvedPhone) {
+          resolvedPhone = persons[0].phone || persons[0].mobile || null;
+          if (resolvedPhone) console.log('Phone filled from contact_persons_details:', resolvedPhone);
+        }
+        if (!resolvedEmail) {
+          resolvedEmail = persons[0].contact_person_email || persons[0].email || null;
+          if (resolvedEmail) console.log('Email filled from contact_persons_details:', resolvedEmail);
+        }
       }
+
+      // If still no phone/email, try contact_persons_associated (different Zoho field)
+      const personsAssoc = estimateDetailData.estimate.contact_persons_associated;
+      if (personsAssoc && personsAssoc.length > 0) {
+        if (!resolvedPhone) {
+          resolvedPhone = personsAssoc[0].phone || personsAssoc[0].mobile || null;
+          if (resolvedPhone) console.log('Phone filled from contact_persons_associated:', resolvedPhone);
+        }
+        if (!resolvedEmail) {
+          resolvedEmail = personsAssoc[0].contact_person_email || personsAssoc[0].email || null;
+          if (resolvedEmail) console.log('Email filled from contact_persons_associated:', resolvedEmail);
+        }
+      }
+
       console.log(`Estimate URL: ${estimateUrl ? 'found' : 'not found'}`);
       console.log(`Contact person: ${customerFirstName} ${customerLastName}`);
+      console.log(`Resolved phone: ${resolvedPhone}, email: ${resolvedEmail}`);
     } else {
       console.warn('Could not fetch estimate details from Zoho API');
     }
@@ -217,7 +244,6 @@ exports.handler = async (event) => {
       throw new Error('GHL upload failed - invalid response');
     }
 
-    // GHL may return 200 or 201 - check for URL in response
     const pdfUrl = ghlUploadData.url || (ghlUploadData.data && ghlUploadData.data.url) || ghlUploadData.fileUrl;
     if (!pdfUrl) {
       console.error('GHL upload - no URL in response:', ghlUploadData);
@@ -226,7 +252,7 @@ exports.handler = async (event) => {
 
     console.log(`PDF uploaded to GHL: ${pdfUrl}`);
 
-    // Update Supabase to ready with PDF URL, estimate_url, and names
+    // Update Supabase to ready with PDF URL, estimate_url, names, and resolved phone/email
     const { error: readyError } = await supabase
       .from('proposals')
       .update({
@@ -236,6 +262,8 @@ exports.handler = async (event) => {
         estimate_url: estimateUrl,
         customer_first_name: customerFirstName,
         customer_last_name: customerLastName,
+        customer_phone: resolvedPhone,
+        customer_email: resolvedEmail,
         status: 'ready',
         updated_at: new Date().toISOString()
       })
@@ -258,8 +286,8 @@ exports.handler = async (event) => {
         customer_name: customerFirstName && customerLastName
           ? `${customerFirstName} ${customerLastName}`
           : customer_name,
-        customer_email: customer_email || '',
-        customer_phone: customer_phone || '',
+        customer_email: resolvedEmail || '',
+        customer_phone: resolvedPhone || '',
         proposal_url: proposalUrl,
         estimate_number,
         salesperson_name: salesperson_name || ''
@@ -300,7 +328,6 @@ exports.handler = async (event) => {
   } catch (error) {
     console.error('Processing error:', error);
 
-    // Try to mark as error in Supabase
     try {
       await supabase
         .from('proposals')
