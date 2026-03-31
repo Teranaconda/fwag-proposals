@@ -3,7 +3,6 @@ const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 exports.handler = async (event) => {
-  // Extract slug from path: /api/proposal/{slug}
   const pathParts = event.path.split('/');
   const slug = pathParts[pathParts.length - 1];
 
@@ -47,7 +46,6 @@ exports.handler = async (event) => {
       };
     }
 
-    // Format display name from first/last if available
     let displayName = data.customer_name;
     if (data.customer_first_name && data.customer_last_name) {
       const titleCase = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();

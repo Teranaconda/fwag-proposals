@@ -6,7 +6,6 @@ let proposalData = null;
 /* === SECTION:HELPERS === */
 function getSlug() {
     const parts = window.location.pathname.split('/');
-    // URL is /est/{slug}
     return parts[2] || null;
 }
 
@@ -34,7 +33,6 @@ async function loadProposal() {
         }
 
         if (response.status === 202) {
-            // Still processing — retry in 3 seconds
             setTimeout(loadProposal, 3000);
             return;
         }
@@ -63,27 +61,23 @@ function showError(title, message) {
 
 /* === SECTION:RENDER_PROPOSAL === */
 function renderProposal(data) {
-    // Hide loading
     document.getElementById('loading-screen').style.display = 'none';
 
-    // Populate hero
     document.getElementById('customer-name').textContent = data.customer_name || '';
     document.getElementById('estimate-number').textContent = data.estimate_number || '';
     document.getElementById('estimate-total-badge').textContent = formatCurrency(data.estimate_total);
 
-    // Set PDF download fallback link
     if (data.pdf_url) {
         document.getElementById('pdf-download-link').href = data.pdf_url;
     }
 
-    // Skip consent modal if already consented (this or any prior estimate) — go straight to proposal
+    // Skip consent modal if already consented (this or any prior estimate)
     if (data.sms_consent) {
         document.getElementById('proposal-content').style.display = 'block';
     } else {
         showConsentModal();
     }
 
-    // Start PDF rendering in background (will be visible once modal is dismissed)
     if (data.pdf_url) {
         renderPdf(data.pdf_url);
     } else {
@@ -101,28 +95,18 @@ async function renderPdf(url) {
 
     try {
         const pdf = await pdfjsLib.getDocument(url).promise;
-
         loading.style.display = 'none';
 
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
-
-            // High-DPI rendering: use at least 3x scale for sharp text
             const dpr = window.devicePixelRatio || 1;
             const scaleFactor = Math.max(3, dpr);
-
-            const baseViewport = page.getViewport({ scale: 1 });
             const renderViewport = page.getViewport({ scale: scaleFactor });
 
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-
-            // Canvas internal resolution at high scale
             canvas.width = renderViewport.width;
             canvas.height = renderViewport.height;
-
-            // CSS display size matches container width (auto height preserves aspect ratio)
-            // The CSS rule #pdf-pages canvas { width: 100%; height: auto; } handles this
 
             await page.render({
                 canvasContext: context,
@@ -150,7 +134,6 @@ function showConsentModal() {
   viewBtn.addEventListener('click', async () => {
     const smsConsent = checkbox ? checkbox.checked : false;
 
-    // Only POST if they actually checked the SMS consent box
     if (smsConsent) {
       try {
         const slug = getSlug();
@@ -167,7 +150,6 @@ function showConsentModal() {
       }
     }
 
-    // Close modal and reveal proposal
     modal.style.display = 'none';
     document.getElementById('proposal-content').style.display = 'block';
   });
@@ -177,7 +159,7 @@ function showConsentModal() {
 /* === SECTION:HANDLE_ACCEPT === */
 async function handleAccept() {
   const slug = getSlug();
-  
+
   try {
     const response = await fetch(`/api/proposal/${slug}/accept`, {
       method: 'POST',
@@ -199,7 +181,7 @@ async function handleAccept() {
     alert('Something went wrong. Please call us at (888) 392-4462.');
   }
 }
-/* === SECTION:HANDLE_ACCEPT === */
+/* === /SECTION:HANDLE_ACCEPT === */
 
 /* === SECTION:INIT === */
 loadProposal();

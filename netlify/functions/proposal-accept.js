@@ -6,14 +6,12 @@ const supabase = createClient(
 );
 
 exports.handler = async (event) => {
-  // Only allow POST
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: JSON.stringify({ error: "Method not allowed" }) };
   }
 
-  // Extract slug from path: /api/proposal/{slug}/accept
   const pathParts = event.path.split("/");
-  const slug = pathParts[pathParts.length - 2]; // second-to-last segment (before "accept")
+  const slug = pathParts[pathParts.length - 2];
 
   if (!slug) {
     return { statusCode: 400, body: JSON.stringify({ error: "Missing slug" }) };
@@ -28,12 +26,9 @@ exports.handler = async (event) => {
 
   const smsConsent = body.sms_consent === true;
   const consentOnly = body.consent_only === true;
-
-  // Get client info for audit trail
   const ip = (event.headers["x-forwarded-for"] || "unknown").split(",")[0].trim();
   const userAgent = event.headers["user-agent"] || "unknown";
 
-  // Fetch proposal
   const { data: proposal, error: fetchError } = await supabase
     .from("proposals")
     .select("*")
@@ -44,11 +39,9 @@ exports.handler = async (event) => {
     return { statusCode: 404, body: JSON.stringify({ error: "Proposal not found" }) };
   }
 
-  // --- CONSENT-ONLY MODE (consent modal "View My Estimate" button) ---
+  // --- CONSENT-ONLY MODE ---
   if (consentOnly) {
-    // Only process SMS consent if checked — otherwise do nothing
     if (smsConsent) {
-      // Update proposal row with SMS consent
       await supabase
         .from("proposals")
         .update({
@@ -59,7 +52,6 @@ exports.handler = async (event) => {
         })
         .eq("id", proposal.id);
 
-      // Log sms_consent event to audit table
       await supabase.from("consent_events").insert({
         proposal_id: proposal.id,
         event_type: "sms_consent",
@@ -100,7 +92,7 @@ exports.handler = async (event) => {
                 body: JSON.stringify({ tags: ["SMS Opted-In"] })
               }
             );
-            console.log("GHL tag 'SMS Opted-In' added to contact:", contactId);
+            console.log("GHL tag SMS Opted-In added to contact:", contactId);
           } else {
             console.log("GHL contact not found by phone, skipping tag");
           }
@@ -110,7 +102,6 @@ exports.handler = async (event) => {
       }
     }
 
-    // Return success — no estimate_url needed, frontend just closes the modal
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
@@ -121,9 +112,7 @@ exports.handler = async (event) => {
     };
   }
 
-  // --- FULL ACCEPTANCE MODE ("Accept & Continue to Sign" button) ---
-
-  // Save SMS consent if checked (might not have been checked in modal)
+  // --- FULL ACCEPTANCE MODE ---
   if (smsConsent && !proposal.sms_consent) {
     await supabase
       .from("proposals")
@@ -135,7 +124,6 @@ exports.handler = async (event) => {
       })
       .eq("id", proposal.id);
 
-    // Log sms_consent event
     await supabase.from("consent_events").insert({
       proposal_id: proposal.id,
       event_type: "sms_consent",
@@ -146,7 +134,6 @@ exports.handler = async (event) => {
     });
   }
 
-  // Log acceptance_redirect event (always on full acceptance)
   await supabase.from("consent_events").insert({
     proposal_id: proposal.id,
     event_type: "acceptance_redirect",
@@ -156,7 +143,6 @@ exports.handler = async (event) => {
     estimate_version: proposal.version
   });
 
-  // Return estimate_url for redirect to Zoho signing
   if (!proposal.estimate_url) {
     return {
       statusCode: 500,
