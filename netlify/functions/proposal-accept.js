@@ -65,21 +65,30 @@ exports.handler = async (event) => {
       try {
         const phone = proposal.customer_phone;
         if (phone) {
-          const lookupRes = await fetch(
-            `https://services.leadconnectorhq.com/contacts/lookup?phone=${encodeURIComponent(phone)}&locationId=${process.env.GHL_LOCATION_ID}`,
+          // Search for contact by phone
+          const searchRes = await fetch(
+            "https://services.leadconnectorhq.com/contacts/search",
             {
+              method: "POST",
               headers: {
                 "Authorization": `Bearer ${process.env.GHL_PRIVATE_TOKEN}`,
-                "Version": "2021-07-28"
-              }
+                "Version": "2021-07-28",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                locationId: process.env.GHL_LOCATION_ID,
+                query: phone,
+                pageLimit: 1
+              })
             }
           );
-          const lookupData = await lookupRes.json();
-          const contactId = lookupData.contacts && lookupData.contacts.length > 0
-            ? lookupData.contacts[0].id
+          const searchData = await searchRes.json();
+          const contactId = searchData.contacts && searchData.contacts.length > 0
+            ? searchData.contacts[0].id
             : null;
 
           if (contactId) {
+            // Add tag
             await fetch(
               `https://services.leadconnectorhq.com/contacts/${contactId}/tags`,
               {
