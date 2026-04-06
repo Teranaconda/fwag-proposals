@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- SECTION:HEAD -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Estimate - Florida Windows and Glass</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<!-- /SECTION:HEAD -->
+<body>
+
+<!-- SECTION:LOADING_AND_ERROR -->
+<div id="loading-screen" class="loading-screen">
+    <div class="spinner"></div>
+    <p>Loading your estimate...</p>
+</div>
+
+<div id="error-screen" class="error-screen" style="display:none;">
+    <h2 id="error-title">Estimate Not Found</h2>
+    <p id="error-message">This estimate link may be invalid or expired. Please contact Florida Windows and Glass at (888) 392-4462.</p>
+</div>
+<!-- /SECTION:LOADING_AND_ERROR -->
+
+<!-- SECTION:CONSENT_MODAL -->
+<div id="consent-modal" class="cover-page" style="display:none;">
+    <div class="cover-lightning" id="cover-lightning"></div>
+    <div class="cover-rain" id="cover-rain"></div>
+    <div class="cover-inner">
+        <div class="cover-center">
+            <p class="cover-estimate-id" id="cover-estimate-number"></p>
+            <h1 class="cover-name" id="cover-customer-name"></h1>
+            <p class="cover-tagline">Your estimate is ready to review.</p>
+        </div>
+        <div class="cover-bottom">
+            <button id="modal-view-btn" class="cover-btn">Continue</button>
+            <div class="cover-consent">
+                <label class="cover-checkbox-label">
+                    <input type="checkbox" id="modal-sms-checkbox" checked>
+                    <span>I agree to receive text updates about my project. Msg and data rates may apply. Reply STOP to opt out.</span>
+                </label>
+            </div>
+            <p class="cover-fine-print"><a href="tel:8883924462">(888) 392-4462</a></p>
+        </div>
+    </div>
+</div>
+<!-- /SECTION:CONSENT_MODAL -->
+
+<!-- SECTION:PROPOSAL_CONTENT -->
+<div id="proposal-content" style="display:none;">
+<!-- /SECTION:PROPOSAL_CONTENT -->
+
+<!-- SECTION:HERO -->
+<header class="hero">
+    <div class="hero-inner">
+        <img src="https://assets.cdn.filesafe.space/ygg3IqHNNUpSXx9l4o0V/media/697b9c00d5b65e6e23af35b5.png" alt="Florida Windows and Glass" class="hero-logo">
+        <h1 class="hero-title">Your estimate is ready, <span id="customer-name"></span>.</h1>
+        <p class="hero-subtitle">Estimate <span id="estimate-number"></span></p>
+    </div>
+</header>
+<div id="estimate-total-badge" style="display:none;"></div>
+<!-- /SECTION:HERO -->
+
+<!-- SECTION:PDF_VIEWER -->
+<section class="section pdf-section">
+    <div class="section-inner">
+        <div class="pdf-header">
+            <div>
+                <h2 class="section-heading">Your detailed estimate.</h2>
+                <p class="section-subtext">Every product, specification, and price. All in one document.</p>
+            </div>
+            <a id="pdf-download-btn" href="#" class="pdf-download-btn" target="_blank" rel="noopener" title="Download PDF">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+        </div>
+        <div class="pdf-container" id="pdf-container">
+            <div id="pdf-loading" class="pdf-loading">
+                <div class="spinner"></div>
+                <p>Rendering your estimate...</p>
+            </div>
+            <div id="pdf-pages"></div>
+            <div id="pdf-error" class="pdf-error" style="display:none;">
+                <p>Unable to display the PDF inline.</p>
+                <a id="pdf-download-link" href="#" class="btn-secondary" target="_blank" rel="noopener">Download Estimate PDF</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /SECTION:PDF_VIEWER -->
+
+<!-- SECTION:VALUE_PROPS -->
+<section class="section value-section">
+    <div class="section-inner">
+        <h2 class="section-heading">More than windows.<br>Peace of mind.</h2>
+        <p class="section-subtext">Every installation is engineered to protect your home, lower your costs, and raise your property value. Here is what changes the day we finish.</p>
+        <div class="value-grid">
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h3>Hurricane-rated protection.</h3>
+                <p>Every product meets Florida's High Velocity Hurricane Zone code. No plywood. No shutters. No last-minute scramble. Your home stays sealed while your neighbors board up.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <h3>Insurance savings that add up.</h3>
+                <p>Homeowners regularly save $1,000 to $3,000+ per year after a full-house installation. Over time, the windows pay for themselves.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <h3>A home worth more.</h3>
+                <p>Impact windows are one of the highest-ROI improvements in South Florida. Buyers expect them. And they pay a premium for a home that already has them.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16s3-4 6-4 4 4 6 4 6-4 6-4"/><path d="M2 12s3-4 6-4 4 4 6 4 6-4 6-4"/><path d="M2 8s3-4 6-4 4 4 6 4 6-4 6-4"/></svg>
+                </div>
+                <h3>Quieter. Instantly.</h3>
+                <p>Traffic, construction, neighbors. Impact glass cuts outside noise dramatically. You notice the difference the moment we install the first window.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /SECTION:VALUE_PROPS -->
+
+<!-- SECTION:INCLUDED -->
+<section class="section included-section">
+    <div class="section-inner">
+        <h2 class="section-heading">Everything is included.<br>No surprise invoices.</h2>
+        <p class="section-subtext">Other contractors charge separately for permitting, engineering, and cleanup. We don't. Every FWAG project is full-service from start to finish.</p>
+        <div class="included-grid">
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>Permitting and Engineering</strong>
+                    <p>We pull every permit and coordinate all engineering drawings. You don't touch paperwork.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>HOA Coordination</strong>
+                    <p>If your community requires approval, we prepare and submit the entire application package.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>Installation and Cleanup</strong>
+                    <p>Our in-house crew installs everything, removes old products, and leaves your home spotless.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>Final County Inspection</strong>
+                    <p>We schedule it, we attend it, and we make sure everything passes code.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>One Point of Contact</strong>
+                    <p>A dedicated project coordinator from estimate to completion. You always know who to call.</p>
+                </div>
+            </div>
+            <div class="included-item">
+                <div class="included-check">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <strong>Post-Install Support</strong>
+                    <p>Questions after we finish? Call us. We don't disappear after the last screw goes in.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /SECTION:INCLUDED -->
+
+<!-- SECTION:PROCESS -->
+<section class="section process-section">
+    <div class="section-inner">
+        <h2 class="section-heading">Six steps. We handle five.</h2>
+        <p class="section-subtext">You have already completed the first two. Approve this estimate, and we take it from here.</p>
+        <div class="process-timeline">
+            <div class="process-step completed">
+                <div class="step-marker">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="step-content">
+                    <h3>In-Home Consultation</h3>
+                    <p>We measured every opening and discussed your needs, preferences, and budget.</p>
+                </div>
+            </div>
+            <div class="process-step completed">
+                <div class="step-marker">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="step-content">
+                    <h3>Custom Estimate</h3>
+                    <p>That is what you are looking at right now.</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-marker"><span>3</span></div>
+                <div class="step-content">
+                    <h3>Permitting and Engineering</h3>
+                    <p>We handle all permits and engineering drawings with the city. You don't lift a finger.</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-marker"><span>4</span></div>
+                <div class="step-content">
+                    <h3>Manufacturing</h3>
+                    <p>Your products are custom-built to your home's exact measurements. Current lead time: 4 to 6 weeks.</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-marker"><span>5</span></div>
+                <div class="step-content">
+                    <h3>Professional Installation</h3>
+                    <p>Our crew installs everything, removes old products, and cleans up. Most jobs finish in a single day.</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-marker"><span>6</span></div>
+                <div class="step-content">
+                    <h3>Final Inspection</h3>
+                    <p>We schedule the county inspection and make sure it passes. Project complete.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /SECTION:PROCESS -->
+
+<!-- SECTION:GUARANTEE -->
+<section class="section guarantee-section">
+    <div class="section-inner guarantee-inner">
+        <div class="guarantee-icon">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <h2 class="section-heading">Built right. Guaranteed.</h2>
+        <p class="guarantee-body">Every FWAG installation is backed by our 5-year workmanship warranty, starting from the date of your final county inspection. If anything related to our work needs attention, we come back and fix it. No runaround. No fine print.</p>
+        <p class="guarantee-extra">Plus the manufacturer's product warranty on every window and door.</p>
+    </div>
+</section>
+<!-- /SECTION:GUARANTEE -->
+
+<!-- SECTION:REVIEWS -->
+<section class="section reviews-section">
+    <div class="section-inner">
+        <h2 class="section-heading">Don't take our word for it.</h2>
+        <p class="section-subtext">100+ five-star reviews from South Florida homeowners.</p>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="review-text">"Professional from start to finish. They handled the permits, installed everything in one day, and the windows look incredible. Can't recommend them enough."</p>
+                <p class="reviewer">Maria L., Miami</p>
+            </div>
+            <div class="review-card">
+                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="review-text">"We got quotes from five companies. FWAG gave us the best price and the best service. Our insurance dropped $1,200 a year after the install."</p>
+                <p class="reviewer">Carlos R., Hialeah</p>
+            </div>
+            <div class="review-card">
+                <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="review-text">"Juvian and his team made the whole process effortless. No surprises, no hidden fees. The crew was respectful and cleaned up everything."</p>
+                <p class="reviewer">Sandra T., Pembroke Pines</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /SECTION:REVIEWS -->
+
+<!-- SECTION:TRUST_BAR -->
+<section class="trust-bar">
+    <div class="trust-inner">
+        <span class="trust-item">FL License #CGC1511987</span>
+        <span class="trust-sep">&#183;</span>
+        <span class="trust-item">30+ Years Experience</span>
+        <span class="trust-sep">&#183;</span>
+        <span class="trust-item">Miami-Dade and Broward</span>
+        <span class="trust-sep">&#183;</span>
+        <span class="trust-item">Fully Licensed and Insured</span>
+    </div>
+</section>
+<!-- /SECTION:TRUST_BAR -->
+
+<!-- SECTION:ACCEPT -->
+<section class="section accept-section">
+    <div class="section-inner accept-inner">
+        <h2 class="section-heading">Ready to get started?</h2>
+        <p>Click below to review the terms and sign your estimate. Once approved, we begin permitting immediately.</p>
+        <button id="accept-btn" class="accept-btn" onclick="handleAccept()">Accept and Continue to Sign</button>
+        <p class="accept-reassurance">You will be taken to a secure signing page. No payment is collected here.</p>
+    </div>
+</section>
+<!-- /SECTION:ACCEPT -->
+
+<!-- SECTION:FOOTER -->
+<footer class="footer">
+    <div class="footer-inner">
+        <p>&#169; 2026 Florida Windows and Glass, Inc.</p>
+        <p><a href="tel:8883924462">(888) 392-4462</a> &#160;&#183;&#160; <a href="https://www.fwaginc.com" target="_blank" rel="noopener">fwaginc.com</a></p>
+    </div>
+</footer>
+<!-- /SECTION:FOOTER -->
+
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
