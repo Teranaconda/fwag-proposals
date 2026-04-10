@@ -182,8 +182,7 @@ a { color: var(--color-primary); }
 .hero-logo {
     width: 200px;
     margin-bottom: 24px;
-    filter: brightness(0) invert(1);
-}
+    }
 .hero-title {
     font-size: 2.2rem;
     font-weight: 800;
