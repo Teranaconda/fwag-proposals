@@ -33,18 +33,24 @@ exports.handler = async (event) => {
     customer_email,
     customer_phone,
     salesperson_name,
-    estimate_total
+    estimate_total,
+    proposal_note,
+    estimate_url: payload_estimate_url
   } = body;
 
-  // Mutable copies for phone/email — Deluge often sends these empty
+  // Mutable copies for phone/email — Deluge and Zoho workflow often send these empty
   let resolvedPhone = customer_phone || null;
   let resolvedEmail = customer_email || null;
+
+  // Clean proposal note — treat empty string as null
+  const cleanProposalNote = (proposal_note && proposal_note.trim()) ? proposal_note.trim() : null;
 
   if (!estimate_id || !estimate_number) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Missing estimate_id or estimate_number' }) };
   }
 
   console.log(`Processing estimate ${estimate_number} (${estimate_id})`);
+  if (cleanProposalNote) console.log(`Proposal note: ${cleanProposalNote}`);
 
   try {
     // Check for existing proposal (idempotency)
@@ -147,27 +153,31 @@ exports.handler = async (event) => {
     const zohoToken = tokenData.access_token;
     console.log('Zoho token refreshed');
 
-    // Fetch estimate details from Zoho API (for estimate_url and contact person names)
+    // Fetch estimate details from Zoho API (for contact person names and phone/email fallback)
     const estimateDetailRes = await fetch(
       `https://www.zohoapis.com/books/v3/estimates/${estimate_id}?organization_id=${process.env.ZOHO_ORG_ID}`,
       { headers: { 'Authorization': `Zoho-oauthtoken ${zohoToken}` } }
     );
     const estimateDetailData = await estimateDetailRes.json();
 
-    let estimateUrl = null;
+    // Use estimate_url from payload first, fall back to API response
+    let estimateUrl = (payload_estimate_url && payload_estimate_url.trim()) ? payload_estimate_url.trim() : null;
     let customerFirstName = null;
     let customerLastName = null;
 
     if (estimateDetailData.estimate) {
-      estimateUrl = estimateDetailData.estimate.estimate_url || null;
-      if (estimateUrl) estimateUrl = estimateUrl.trim();
+      // Only use API estimate_url if payload didn't provide one
+      if (!estimateUrl) {
+        estimateUrl = estimateDetailData.estimate.estimate_url || null;
+        if (estimateUrl) estimateUrl = estimateUrl.trim();
+      }
 
       // Get first/last name + phone/email from contact_persons_details
       const persons = estimateDetailData.estimate.contact_persons_details;
       if (persons && persons.length > 0) {
         customerFirstName = persons[0].first_name || null;
         customerLastName = persons[0].last_name || null;
-        // Fill phone/email from contact person if Deluge sent empty
+        // Fill phone/email from contact person if payload sent empty
         if (!resolvedPhone) {
           resolvedPhone = persons[0].phone || persons[0].mobile || null;
           if (resolvedPhone) console.log('Phone filled from contact_persons_details:', resolvedPhone);
@@ -282,19 +292,22 @@ exports.handler = async (event) => {
     // Trigger GHL workflow
     const proposalUrl = `${process.env.SITE_URL}/est/${slug}`;
 
+    const ghlWorkflowPayload = {
+      customer_name: customerFirstName && customerLastName
+        ? `${customerFirstName} ${customerLastName}`
+        : customer_name,
+      customer_email: resolvedEmail || '',
+      customer_phone: resolvedPhone || '',
+      proposal_url: proposalUrl,
+      estimate_number,
+      salesperson_name: salesperson_name || '',
+      proposal_note: cleanProposalNote || ''
+    };
+
     const ghlWorkflowRes = await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customer_name: customerFirstName && customerLastName
-          ? `${customerFirstName} ${customerLastName}`
-          : customer_name,
-        customer_email: resolvedEmail || '',
-        customer_phone: resolvedPhone || '',
-        proposal_url: proposalUrl,
-        estimate_number,
-        salesperson_name: salesperson_name || ''
-      })
+      body: JSON.stringify(ghlWorkflowPayload)
     });
 
     console.log(`GHL workflow triggered: ${ghlWorkflowRes.status}`);
