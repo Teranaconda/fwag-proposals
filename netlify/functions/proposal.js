@@ -17,7 +17,7 @@ exports.handler = async (event) => {
   try {
     const { data, error } = await supabase
       .from('proposals')
-      .select('estimate_number, customer_name, customer_first_name, customer_last_name, customer_email, customer_phone, salesperson_name, estimate_total, pdf_url, estimate_url, version, status, sms_consent, sms_consent_at, signed, signed_at, signed_version, created_at, updated_at')
+      .select('estimate_number, customer_name, customer_first_name, customer_last_name, customer_email, customer_phone, salesperson_name, estimate_total, pdf_url, estimate_url, version, status, sms_consent, sms_consent_at, signed, signed_at, signed_version, language, created_at, updated_at')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -84,6 +84,7 @@ exports.handler = async (event) => {
         signed: data.signed,
         signed_at: data.signed_at,
         signed_version: data.signed_version,
+        language: data.language || 'en',
         created_at: data.created_at
       })
     };

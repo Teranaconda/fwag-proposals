@@ -38,6 +38,9 @@ exports.handler = async (event) => {
     estimate_url: payload_estimate_url
   } = body;
 
+  // Map customer language to short code — "Spanish" → "es", everything else → "en"
+  const language = (body.customer_language && body.customer_language.trim().toLowerCase() === 'spanish') ? 'es' : 'en';
+
   // Mutable copies for phone/email — Deluge and Zoho workflow often send these empty
   let resolvedPhone = customer_phone || null;
   let resolvedEmail = customer_email || null;
@@ -112,6 +115,7 @@ exports.handler = async (event) => {
       estimate_total: parseFloat(estimate_total) || 0,
       slug,
       version,
+      language,
       status: 'processing',
       updated_at: new Date().toISOString()
     };
@@ -308,7 +312,8 @@ exports.handler = async (event) => {
       proposal_url: proposalUrl,
       estimate_number,
       salesperson_name: salesperson_name || '',
-      proposal_note: cleanProposalNote || ''
+      proposal_note: cleanProposalNote || '',
+      language
     };
 
     const ghlWorkflowRes = await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
