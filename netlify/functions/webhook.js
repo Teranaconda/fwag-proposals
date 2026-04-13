@@ -39,7 +39,8 @@ exports.handler = async (event) => {
   } = body;
 
   // Map customer language to short code — "Spanish" → "es", everything else → "en"
-  const language = (body.customer_language && body.customer_language.trim().toLowerCase() === 'spanish') ? 'es' : 'en';
+  const rawLang = body.customer_language ? body.customer_language.trim().toLowerCase() : '';
+const language = (rawLang === 'spanish' || rawLang === 'es') ? 'es' : 'en';
 
   // Mutable copies for phone/email — Deluge and Zoho workflow often send these empty
   let resolvedPhone = customer_phone || null;
@@ -78,13 +79,46 @@ exports.handler = async (event) => {
     if (existing && existing.status === 'ready') {
       const totalChanged = parseFloat(existing.estimate_total) !== parseFloat(estimate_total);
       if (!totalChanged) {
-        console.log('Proposal already ready, no changes detected');
+        console.log('Proposal already ready, re-triggering GHL for SMS re-send');
+
+// Update language in case it was wrong or changed
+if (existing.language !== language) {
+  await supabase.from('proposals').update({ language, updated_at: new Date().toISOString() }).eq('id', existing.id);
+  existing.language = language;
+}
+        
+        // Re-trigger GHL workflow for SMS re-send
+        const resendUrl = language === 'es' 
+          ? `${process.env.SITE_URL}/est/${existing.slug}?lang=es` 
+          : `${process.env.SITE_URL}/est/${existing.slug}`;
+        
+        const ghlResendPayload = {
+          customer_name: existing.customer_first_name && existing.customer_last_name
+            ? `${existing.customer_first_name} ${existing.customer_last_name}`
+            : existing.customer_name,
+          customer_email: existing.customer_email || '',
+          customer_phone: existing.customer_phone || '',
+          proposal_url: resendUrl,
+          estimate_number: existing.estimate_number,
+          salesperson_name: existing.salesperson_name || '',
+          proposal_note: cleanProposalNote || '',
+          language: existing.language || 'en'
+        };
+
+        await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(ghlResendPayload)
+        });
+
+        console.log('GHL workflow re-triggered for existing proposal');
+        
         return {
           statusCode: 200,
           body: JSON.stringify({
             status: 'success',
-            message: 'Proposal already exists',
-            proposal_url: `${process.env.SITE_URL}/est/${existing.slug}`
+            message: 'Proposal already exists, SMS re-sent',
+            proposal_url: resendUrl
           })
         };
       }
