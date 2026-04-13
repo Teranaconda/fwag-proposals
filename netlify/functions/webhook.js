@@ -41,6 +41,7 @@ exports.handler = async (event) => {
   // Map customer language to short code — "Spanish" → "es", everything else → "en"
   const rawLang = body.customer_language ? body.customer_language.trim().toLowerCase() : '';
 const language = (rawLang === 'spanish' || rawLang === 'es') ? 'es' : 'en';
+console.log('Raw customer_language from payload:', body.customer_language, '-> mapped to:', language);
 
   // Mutable copies for phone/email — Deluge and Zoho workflow often send these empty
   let resolvedPhone = customer_phone || null;
