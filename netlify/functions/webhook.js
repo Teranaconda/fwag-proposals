@@ -96,7 +96,7 @@ exports.handler = async (event) => {
     if (existing) {
       slug = existing.slug;
     } else if (body.proposal_link && body.proposal_link.trim()) {
-      const linkPath = body.proposal_link.trim().split('/est/')[1];
+      const linkPath = body.proposal_link.trim().split('/est/')[1]?.split('?')[0];
       slug = linkPath || `${estimate_number}-${crypto.randomBytes(4).toString('hex')}`.toLowerCase();
     } else {
       slug = `${estimate_number}-${crypto.randomBytes(4).toString('hex')}`.toLowerCase();
