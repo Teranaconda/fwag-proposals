@@ -301,7 +301,9 @@ exports.handler = async (event) => {
     console.log('Supabase updated to ready');
 
     // Trigger GHL workflow
-    const proposalUrl = `${process.env.SITE_URL}/est/${slug}`;
+    const proposalUrl = language === 'es' 
+  ? `${process.env.SITE_URL}/est/${slug}?lang=es` 
+  : `${process.env.SITE_URL}/est/${slug}`;
 
     const ghlWorkflowPayload = {
       customer_name: customerFirstName && customerLastName
