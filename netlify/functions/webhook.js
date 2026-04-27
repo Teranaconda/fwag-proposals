@@ -389,14 +389,20 @@ if (existing.language !== language) {
         slug
       })
     };
-
   } catch (error) {
     console.error('Processing error:', error);
+
+    // Write error details to signature_data for debugging (temporary)
+    const errorInfo = `WEBHOOK ERROR @ ${new Date().toISOString()}: ${error.message || 'Unknown error'} | Stack: ${error.stack ? error.stack.substring(0, 500) : 'no stack'}`;
 
     try {
       await supabase
         .from('proposals')
-        .update({ status: 'error', updated_at: new Date().toISOString() })
+        .update({ 
+          status: 'error', 
+          signature_data: errorInfo,
+          updated_at: new Date().toISOString() 
+        })
         .eq('estimate_id', estimate_id);
     } catch (e) {
       console.error('Failed to mark error status:', e);
