@@ -50,6 +50,11 @@ console.log('Raw customer_language from payload:', body.customer_language, '-> m
   // Clean proposal note — treat empty string as null
   const cleanProposalNote = (proposal_note && proposal_note.trim()) ? proposal_note.trim() : null;
 
+  // sms_skip: when true, do everything except trigger the GHL SMS workflow.
+  // Accept both boolean true and string "true" (Zoho Deluge / workflow webhooks send strings).
+  const smsSkip = body.sms_skip === true || body.sms_skip === 'true';
+  if (smsSkip) console.log('sms_skip=true — GHL workflow will not be triggered');
+
   if (!estimate_id || !estimate_number) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Missing estimate_id or estimate_number' }) };
   }
@@ -106,19 +111,22 @@ if (existing.language !== language) {
           language: existing.language || 'en'
         };
 
-        await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(ghlResendPayload)
-        });
+        if (smsSkip) {
+          console.log('Skipping GHL re-trigger — sms_skip=true');
+        } else {
+          await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(ghlResendPayload)
+          });
+          console.log('GHL workflow re-triggered for existing proposal');
+        }
 
-        console.log('GHL workflow re-triggered for existing proposal');
-        
         return {
           statusCode: 200,
           body: JSON.stringify({
             status: 'success',
-            message: 'Proposal already exists, SMS re-sent',
+            message: smsSkip ? 'Proposal already exists (no SMS sent)' : 'Proposal already exists, SMS re-sent',
             proposal_url: resendUrl
           })
         };
@@ -353,13 +361,16 @@ if (existing.language !== language) {
       language
     };
 
-    const ghlWorkflowRes = await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(ghlWorkflowPayload)
-    });
-
-    console.log(`GHL workflow triggered: ${ghlWorkflowRes.status}`);
+    if (smsSkip) {
+      console.log('Skipping initial GHL trigger — sms_skip=true');
+    } else {
+      const ghlWorkflowRes = await fetch(process.env.GHL_WORKFLOW_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ghlWorkflowPayload)
+      });
+      console.log(`GHL workflow triggered: ${ghlWorkflowRes.status}`);
+    }
 
     // If signing already happened on a previous version, invalidate
     if (existing && existing.signed && version > (existing.signed_version || 0)) {
