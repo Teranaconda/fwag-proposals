@@ -75,6 +75,21 @@ console.log('Raw customer_language from payload:', body.customer_language, '-> m
       throw new Error('Database error');
     }
 
+    // Race-condition guard: if sms_skip and another webhook is already processing
+    // this estimate, back off. Prevents the status-change rule from deleting the
+    // button's in-progress row when both webhooks fire near-simultaneously on a
+    // single Send Proposal click.
+    if (smsSkip && existing && existing.status === 'processing') {
+      console.log('sms_skip=true and existing row is processing — backing off');
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          status: 'success',
+          message: 'Another process is already handling this estimate'
+        })
+      };
+    }
+
     // If stuck in processing, delete and retry
     if (existing && existing.status === 'processing') {
       console.log('Found stuck processing row, deleting and retrying');
