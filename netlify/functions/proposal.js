@@ -14,10 +14,12 @@ exports.handler = async (event) => {
     };
   }
 
+  const SELECT_COLS = 'estimate_number, customer_name, customer_first_name, customer_last_name, customer_email, customer_phone, salesperson_name, estimate_total, pdf_url, estimate_url, version, status, sms_consent, sms_consent_at, signed, signed_at, signed_version, language, created_at, updated_at';
+
   try {
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('proposals')
-      .select('estimate_number, customer_name, customer_first_name, customer_last_name, customer_email, customer_phone, salesperson_name, estimate_total, pdf_url, estimate_url, version, status, sms_consent, sms_consent_at, signed, signed_at, signed_version, language, created_at, updated_at')
+      .select(SELECT_COLS)
       .eq('slug', slug)
       .maybeSingle();
 
@@ -28,6 +30,28 @@ exports.handler = async (event) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Database error' })
       };
+    }
+
+    // Fallback: the emailed link (Zoho cf_proposal_link) and the DB/SMS slug can carry
+    // different random suffixes for the same estimate. If the exact slug misses, match on
+    // the "est-<number>-" prefix and serve the newest row for that estimate.
+    if (!data) {
+      const dash = slug.lastIndexOf('-');
+      if (dash > 0) {
+        const prefix = slug.slice(0, dash + 1);
+        const { data: byPrefix, error: prefixError } = await supabase
+          .from('proposals')
+          .select(SELECT_COLS)
+          .like('slug', `${prefix}%`)
+          .order('version', { ascending: false })
+          .limit(1);
+        if (prefixError) {
+          console.error('Supabase prefix-fallback error:', prefixError);
+        } else if (byPrefix && byPrefix.length > 0) {
+          console.log(`Slug ${slug} not found; served via prefix match ${prefix}%`);
+          data = byPrefix[0];
+        }
+      }
     }
 
     if (!data) {
