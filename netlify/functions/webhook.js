@@ -149,15 +149,28 @@ if (existing.language !== language) {
       console.log('Estimate changed, re-processing');
     }
 
-    // Extract slug from Zoho-generated proposal link, fall back to random generation
+    // Extract slug from the Zoho-generated proposal link.
+    // A cloned estimate carries the SOURCE estimate's proposal_link (Zoho's Clone copies
+    // the field and the on-create rule does not run on clones), so trusting that slug would
+    // either collide with the source's row (duplicate-key 500 -> no row, no SMS) or serve
+    // the source's PDF. Only accept the link's slug when it belongs to THIS estimate;
+    // otherwise derive a DETERMINISTIC slug from estimate_id — deterministic, not random, so
+    // the two webhooks that fire per send compute the same value and collapse to one row
+    // instead of racing to insert two.
     let slug;
     if (existing) {
       slug = existing.slug;
-    } else if (body.proposal_link && body.proposal_link.trim()) {
-      const linkPath = body.proposal_link.trim().split('/est/')[1]?.split('?')[0];
-      slug = linkPath || `${estimate_number}-${crypto.randomBytes(4).toString('hex')}`.toLowerCase();
     } else {
-      slug = `${estimate_number}-${crypto.randomBytes(4).toString('hex')}`.toLowerCase();
+      const ownPrefix = `${estimate_number}-`.toLowerCase();
+      const linkPath = (body.proposal_link && body.proposal_link.trim())
+        ? body.proposal_link.trim().split('/est/')[1]?.split('?')[0]
+        : null;
+      if (linkPath && linkPath.toLowerCase().startsWith(ownPrefix)) {
+        slug = linkPath;
+      } else {
+        const detHex = crypto.createHash('sha256').update(String(estimate_id)).digest('hex').slice(0, 8);
+        slug = `${estimate_number}-${detHex}`.toLowerCase();
+      }
     }
     const version = existing ? (existing.version || 1) + 1 : 1;
 
