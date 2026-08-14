@@ -169,8 +169,9 @@ a { color: var(--color-primary); }
 
 /* === SECTION:HERO === */
 .hero {
-    background: linear-gradient(135deg, #0052CC 0%, #003d99 100%);
-    color: #fff;
+    background: #e8f1f8;
+    border-top: 8px solid #0055b8;
+    color: #0b4383;
     padding: 48px 0 52px;
     text-align: center;
 }
@@ -350,8 +351,9 @@ a { color: var(--color-primary); }
 
 /* === SECTION:HERO === */
 .hero {
-    background: linear-gradient(135deg, #0052CC 0%, #003d99 100%);
-    color: #fff;
+    background: #e8f1f8;
+    border-top: 8px solid #0055b8;
+    color: #0b4383;
     padding: 48px 0 52px;
     text-align: center;
 }
@@ -373,7 +375,7 @@ a { color: var(--color-primary); }
 }
 .hero-subtitle {
     font-size: 1rem;
-    opacity: 0.7;
+    color: #4f6079;
     font-weight: 500;
 }
 /* === /SECTION:HERO === */
@@ -1036,7 +1038,7 @@ a { color: var(--color-primary); }
 }
 .hero-subtitle {
     font-size: 1rem;
-    opacity: 0.7;
+    color: #4f6079;
     font-weight: 500;
 }
 /* === /SECTION:HERO === */
