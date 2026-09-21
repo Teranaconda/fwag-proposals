@@ -5,6 +5,14 @@ const crypto = require('crypto');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
+// Zoho sends money as a comma-grouped string ("4,877.00"). Bare parseFloat stops at the
+// comma and yields 4, which corrupted estimate_total and broke the change-detection below.
+// Strip anything that is not a digit, dot or minus before parsing.
+const toAmount = (v) => {
+  if (v === null || v === undefined) return NaN;
+  return parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
+};
+
 exports.handler = async (event) => {
   console.log('Webhook received');
 
@@ -96,10 +104,12 @@ console.log('Raw customer_language from payload:', body.customer_language, '-> m
       await supabase.from('proposals').delete().eq('id', existing.id);
     }
 
-    // If ready and same version, return success
+    // If ready: only the sms_skip safety-net rule may short-circuit. An explicit send always
+    // re-processes so content-only edits (description, tint, wording) reach the customer link —
+    // the dollar total is not a reliable "did anything change" signal.
     if (existing && existing.status === 'ready') {
-      const totalChanged = parseFloat(existing.estimate_total) !== parseFloat(estimate_total);
-      if (!totalChanged) {
+      const totalChanged = toAmount(existing.estimate_total) !== toAmount(estimate_total);
+      if (!totalChanged && smsSkip) {
         console.log('Proposal already ready, re-triggering GHL for SMS re-send');
 
 // Update language in case it was wrong or changed
@@ -141,12 +151,12 @@ if (existing.language !== language) {
           statusCode: 200,
           body: JSON.stringify({
             status: 'success',
-            message: smsSkip ? 'Proposal already exists (no SMS sent)' : 'Proposal already exists, SMS re-sent',
+            message: 'Proposal already exists (no SMS sent)',
             proposal_url: resendUrl
           })
         };
       }
-      console.log('Estimate changed, re-processing');
+      console.log(smsSkip ? 'Estimate changed, re-processing' : 'Explicit send — re-processing to pick up any edits');
     }
 
     // Extract slug from the Zoho-generated proposal link.
@@ -183,7 +193,7 @@ if (existing.language !== language) {
       customer_email: resolvedEmail,
       customer_phone: resolvedPhone,
       salesperson_name: salesperson_name || null,
-      estimate_total: parseFloat(estimate_total) || 0,
+      estimate_total: toAmount(estimate_total) || 0,
       slug,
       version,
       language,
